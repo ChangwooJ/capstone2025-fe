@@ -11,7 +11,7 @@ const HeaderContainer = styled.div`
 `;
 
 const LogoSection = styled.div`
-  width: 20%;
+  width: 10%;
   height: 100%;
   display: flex;
   justify-content: center;
@@ -26,7 +26,7 @@ const HeaderContain = styled.div`
 `;
 
 const NavigationSection = styled.div`
-  width: 60%;
+  width: 75%;
 `;
 
 const LoginButton = styled.button`
@@ -38,7 +38,7 @@ const LoginButton = styled.button`
 `;
 
 const LoginSection = styled.div`
-  width: 20%;
+  width: 15%;
   display: flex;
   justify-content: center;
 `;
