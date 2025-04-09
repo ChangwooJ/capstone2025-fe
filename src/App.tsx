@@ -3,6 +3,7 @@ import Home from './pages/Home'
 import CommonComponents from './layouts/CommonComponents';
 
 import './App.css';
+import Exchange from './pages/Exchange';
 
 function App() {
   return (
@@ -10,6 +11,7 @@ function App() {
       <Routes>
         <Route element={<CommonComponents />}>
           <Route path='/' element={<Home />} />
+          <Route path='/exchange' element={<Exchange />} />
         </Route>
       </Routes>
     </Router>
