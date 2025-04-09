@@ -2,12 +2,11 @@ import { useNavigate } from "react-router-dom";
 import styled from "styled-components"
 
 const HomeWrapper = styled.div`
-  width: 100vw;
+  width: 100%;
   height: 100vh;
 `;
 
 const IntroduceSection = styled.div`
-  border: 1px solid red;
   display: flex;
   flex-direction: column;
   justify-content: center;
