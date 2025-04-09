@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import styled from "styled-components";
 import PriceTitle from "./components/PriceTitle";
+import PriceChart from "./components/PriceChart";
 
 const PriceInfoWrapper = styled.div`
   width: 70%;
@@ -29,6 +30,7 @@ const PriceInquiry = () => {
     <>
       <PriceInfoWrapper>
         <PriceTitle priceData={priceData} />
+        {priceData.length > 0 && <PriceChart priceData={priceData} />}
       </PriceInfoWrapper>
     </>
   )

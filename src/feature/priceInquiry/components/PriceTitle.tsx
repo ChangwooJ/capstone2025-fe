@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { priceDataType } from "../types/priceTypes";
 
 const PriceTitleWrapper = styled.div`
   display: flex;
@@ -31,24 +32,10 @@ const CurrentPrice = styled.div`
   font-weight: bold;
 `;
 
-const RiseRate = styled.div<RiseRateProps>`
+const RiseRate = styled.div<{ $isPositive: boolean }>`
   text-align: right;
-  color: ${(props) => (props.isPositive ? '#22C55E' : 'red')};
+  color: ${(props) => (props.$isPositive ? '#22C55E' : 'red')};
 `;
-
-interface RiseRateProps {
-  isPositive: boolean;
-}
-
-interface priceDataType {
-  id: number;
-  datetime: string;
-  open: number;
-  high: number;
-  low: number;
-  close: number;
-  volume: number;
-}
 
 interface PriceTitleProps {
   priceData: priceDataType[];
@@ -68,7 +55,7 @@ const PriceTitle = ({ priceData }: PriceTitleProps) => {
       </CoinNameWrapper>
       <PriceWrapper>
         <CurrentPrice>${latestClose}</CurrentPrice>
-        <RiseRate isPositive={isPositive}>{riseRate}%</RiseRate>
+        <RiseRate $isPositive={isPositive}>{riseRate}%</RiseRate>
       </PriceWrapper>
     </PriceTitleWrapper>
   );

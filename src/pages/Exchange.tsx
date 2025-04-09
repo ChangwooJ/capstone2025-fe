@@ -4,7 +4,7 @@ import PriceInquiry from "../feature/priceInquiry/PriceInquiry";
 const ExchangeWrapper = styled.div`
   width: 100%;
   height: 100%;
-  background-color: #f1f4f9;
+  background-color: var(--primary-background-color);
   box-sizing: border-box;
   padding: 2%;
 `;
