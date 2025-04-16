@@ -19,7 +19,6 @@ const TradingSectionHeader = styled.div`
 `;
 
 const TradingStyle = styled.div<{isActive: boolean}>`
-  z-index: 1;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -36,15 +35,21 @@ const TradingStyle = styled.div<{isActive: boolean}>`
 `;
 
 const TradingSectionBody = styled.div`
-  z-index: 999;
   display: flex;
-  gap: 3%;
+  flex-direction: column;
   width: 100%;
   height: fit-content;
   padding: 3%;
   border-radius: 10px;
   border-top-left-radius: 0;
   border: 1px solid #6fe4d1;
+`;
+
+const InputContainer = styled.div`
+  display: flex;
+  width: 100%;
+  height: fit-content;
+  gap: 3%;
 `;
 
 const InputWrapper = styled.div`
@@ -77,6 +82,24 @@ const TradingInput = styled.input`
   font-size: 0.9rem;
   padding: 3% 5%;
   border: 1px solid rgb(189, 189, 189);
+`;
+
+const TradingSectionFooter = styled.div`
+  display: flex;
+  justify-content: right;
+  padding: 2% 4% 0 0;
+  width: 100%;
+  height: fit-content;
+`;
+
+const Trading = styled.button`
+  background-color: #6fe4d1;
+  padding: 7px 10%;
+  border-radius: 5px;
+  border: none;
+  color: white;
+  font-size: 1.1rem;
+  cursor: pointer;
 `;
 
 const TradingSection = () => {
@@ -116,27 +139,32 @@ const TradingSection = () => {
         </TradingStyle>
       </TradingSectionHeader>
       <TradingSectionBody>
-        <InputWrapper>
-          매수 가격 (USD)
-          <TradingInputWrapper>
-            <TradingInput value={price} type="number" min="0" />
-            <ValueButton onClick={() => setPrice(price + 1)}>+</ValueButton>
-            <ValueButton onClick={() => setPrice(price - 1)}>-</ValueButton>
-          </TradingInputWrapper>
-        </InputWrapper>
-        <InputWrapper>
-          주문 수량 (BTC)
-          <TradingInput
-            value={count}
-            onChange={(e) => setCount(Number(e.target.value))}
-            type="number"
-            min="0"
-          />
-        </InputWrapper>
-        <InputWrapper>
-          주문 총액 (USD)
-          <TradingInput value={price * count} />
-        </InputWrapper>
+        <InputContainer>
+          <InputWrapper>
+            매수 가격 (USD)
+            <TradingInputWrapper>
+              <TradingInput value={price} type="number" min="0" />
+              <ValueButton onClick={() => setPrice(price + 1)}>+</ValueButton>
+              <ValueButton onClick={() => setPrice(price - 1)}>-</ValueButton>
+            </TradingInputWrapper>
+          </InputWrapper>
+          <InputWrapper>
+            주문 수량 (BTC)
+            <TradingInput
+              value={count}
+              onChange={(e) => setCount(Number(e.target.value))}
+              type="number"
+              min="0"
+            />
+          </InputWrapper>
+          <InputWrapper>
+            주문 총액 (USD)
+            <TradingInput value={price * count} />
+          </InputWrapper>
+        </InputContainer>
+        <TradingSectionFooter>
+          <Trading>매수</Trading>
+        </TradingSectionFooter>
       </TradingSectionBody>
     </TradingSectionContainer>
   );
