@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react";
 import styled from "styled-components";
-import { priceDataType } from "../priceInquiry/types/priceTypes";
 
 const TradingSectionContainer = styled.div`
   background-color: white;
   border-radius: 10px;
   box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
   margin-top: 1%;
-  width: 70%;
+  width: 100%;
   height: 30%;
   padding: 2%;
 `;
@@ -104,15 +103,13 @@ const Trading = styled.button`
 
 const TradingSection = () => {
   const [activeStyle, setActiveStyle] = useState("일반 매매");
-  const [priceData, setPriceData] = useState<priceDataType[]>([]);
   const [price, setPrice] = useState(0);
   const [count, setCount] = useState(1);
 
   useEffect(() => {
     const fetchData = async () => {
-      const res = await fetch("http://localhost:8000/api/price");
+      const res = await fetch("http://localhost:8000/api/exchange_price");
       const data = await res.json();
-      setPriceData(data);
 
       if (data.length > 0) {
         setPrice(data[data.length - 1].close);

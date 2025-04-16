@@ -4,7 +4,7 @@ import PriceTitle from "./components/PriceTitle";
 import PriceChart from "./components/PriceChart";
 
 const PriceInfoWrapper = styled.div`
-  width: 70%;
+  width: 100%;
   height: fit-content;
   background-color: white;
   border-radius: 10px;
@@ -17,9 +17,10 @@ const PriceInquiry = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const res = await fetch('http://localhost:8000/api/price');
+      const res = await fetch('http://localhost:8000/api/exchange_price');
       const data = await res.json();
       setPriceData(data);
+      console.log(data);
     };
 
     fetchData();
