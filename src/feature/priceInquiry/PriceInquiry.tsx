@@ -5,9 +5,10 @@ import PriceChart from "./components/PriceChart";
 
 const PriceInfoWrapper = styled.div`
   width: 70%;
-  height: 90%;
+  height: fit-content;
   background-color: white;
   border-radius: 10px;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
   padding: 2%;
 `;
 
@@ -23,8 +24,6 @@ const PriceInquiry = () => {
 
     fetchData();
   }, []);
-
-  //console.log(priceData);
 
   return (
     <>
