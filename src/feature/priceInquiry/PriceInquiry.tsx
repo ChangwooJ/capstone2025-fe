@@ -4,10 +4,11 @@ import PriceTitle from "./components/PriceTitle";
 import PriceChart from "./components/PriceChart";
 
 const PriceInfoWrapper = styled.div`
-  width: 70%;
-  height: 90%;
+  width: 100%;
+  height: fit-content;
   background-color: white;
   border-radius: 10px;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
   padding: 2%;
 `;
 
@@ -16,15 +17,14 @@ const PriceInquiry = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const res = await fetch('http://localhost:8000/api/price');
+      const res = await fetch('http://localhost:8000/api/exchange_price');
       const data = await res.json();
       setPriceData(data);
+      console.log(data);
     };
 
     fetchData();
   }, []);
-
-  //console.log(priceData);
 
   return (
     <>

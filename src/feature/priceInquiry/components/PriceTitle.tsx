@@ -5,6 +5,9 @@ const PriceTitleWrapper = styled.div`
   display: flex;
   justify-content: space-between;
   width: 100%;
+  padding-bottom: 2%;
+  margin-bottom: 2%;
+  border-bottom: 1px solid black;
 `;
 
 const CoinNameWrapper = styled.div`

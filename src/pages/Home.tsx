@@ -13,7 +13,7 @@ const IntroduceSection = styled.div`
   align-items: center;
   width: 100%;
   height: 80%;
-  background-color: #0b45c2;
+  background-color: #33618c;
 `;
 
 const IntroduceDescription = styled.div`
