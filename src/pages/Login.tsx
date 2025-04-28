@@ -1,5 +1,7 @@
 import styled from "styled-components";
 import SignUp from "../feature/users/SignUp";
+import Login from "../feature/users/LoginForm";
+import { useState } from "react";
 
 const UserTemplate = styled.div`
   display: flex;
@@ -9,13 +11,15 @@ const UserTemplate = styled.div`
   height: 90%;
 `;
 
-const Login = () => {
+const User = () => {
+  const [buttonState, setButtonState] = useState("login");
 
   return (
     <UserTemplate>
-      <SignUp />
+      {buttonState == "signup" && <SignUp />}
+      {buttonState == "login" && <Login setButtonState={setButtonState} />}
     </UserTemplate>
   );
 };
 
-export default Login;
+export default User;

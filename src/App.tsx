@@ -4,7 +4,7 @@ import CommonComponents from './layouts/CommonComponents';
 
 import './App.css';
 import Exchange from './pages/Exchange';
-import Login from './pages/Login';
+import User from './pages/Login';
 
 function App() {
   return (
@@ -13,7 +13,7 @@ function App() {
         <Route element={<CommonComponents />}>
           <Route path='/' element={<Home />} />
           <Route path='/exchange' element={<Exchange />} />
-          <Route path='/login' element={<Login />} />
+          <Route path='/login' element={<User />} />
         </Route>
       </Routes>
     </Router>
