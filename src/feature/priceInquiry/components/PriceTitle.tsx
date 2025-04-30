@@ -1,5 +1,6 @@
 import styled from "styled-components";
 import { priceDataType } from "../types/priceTypes";
+import { formatNumberWithComma } from "../utils/numberToPrice";
 
 const PriceTitleWrapper = styled.div`
   display: flex;
@@ -46,18 +47,18 @@ interface PriceTitleProps {
 
 const PriceTitle = ({ priceData }: PriceTitleProps) => {
   const latestClose = priceData[priceData.length - 1]?.close;
-  const yesterDayClose = priceData[priceData.length - 5]?.close;
-  const riseRate = (( latestClose / yesterDayClose ) * 100 - 100).toFixed(2);
+  const prevClose = priceData[priceData.length - 2]?.close;
+  const riseRate = (( latestClose / prevClose ) * 100 - 100).toFixed(2);
   const isPositive = parseFloat(riseRate) >= 0;
 
   return (
     <PriceTitleWrapper>
       <CoinNameWrapper>
         <CoinName>비트코인</CoinName>
-        <CoinTag>BTC/USD</CoinTag>
+        <CoinTag>BTC/KRW</CoinTag>
       </CoinNameWrapper>
       <PriceWrapper>
-        <CurrentPrice>${latestClose}</CurrentPrice>
+        <CurrentPrice>₩{formatNumberWithComma(latestClose)}</CurrentPrice>
         <RiseRate $isPositive={isPositive}>{riseRate}%</RiseRate>
       </PriceWrapper>
     </PriceTitleWrapper>

@@ -108,7 +108,7 @@ const TradingSection = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const res = await fetch("http://localhost:8000/api/exchange_price");
+      const res = await fetch("http://localhost:8000/api/exchangePrice");
       const data = await res.json();
 
       if (data.length > 0) {
@@ -141,8 +141,8 @@ const TradingSection = () => {
             매수 가격 (USD)
             <TradingInputWrapper>
               <TradingInput value={price} type="number" min="0" />
-              <ValueButton onClick={() => setPrice(price + 1)}>+</ValueButton>
-              <ValueButton onClick={() => setPrice(price - 1)}>-</ValueButton>
+              <ValueButton onClick={() => setPrice(price + 1000)}>+</ValueButton>
+              <ValueButton onClick={() => setPrice(price - 1000)}>-</ValueButton>
             </TradingInputWrapper>
           </InputWrapper>
           <InputWrapper>
