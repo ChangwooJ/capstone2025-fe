@@ -104,7 +104,7 @@ const Trading = styled.button`
 const TradingSection = () => {
   const [activeStyle, setActiveStyle] = useState("일반 매매");
   const [price, setPrice] = useState(0);
-  const [count, setCount] = useState(1);
+  const [count, setCount] = useState(0);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -118,6 +118,40 @@ const TradingSection = () => {
 
     fetchData();
   }, []);
+
+  const handleOrder = async () => {
+    if (price <= 0 || count <= 0) {
+      alert("가격과 수량을 올바르게 입력하세요.");
+      return;
+    }
+
+    try {
+      const res = await fetch("http://localhost:8000/api/order", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          market: "KRW-BTC",      // 실제 마켓을 사용하세요
+          side: "bid",
+          price: price.toFixed(0),
+          volume: count.toFixed(8),
+          ord_type: "limit"       // 지정가 주문
+        })
+      });
+  
+      const data = await res.json();
+  
+      if (res.ok) {
+        alert("주문이 정상적으로 접수되었습니다.\n주문번호: " + data.uuid);
+      } else {
+        alert("주문 실패: " + (data.error || "알 수 없는 오류"));
+      }
+    } catch (error) {
+      alert("주문 요청 중 오류가 발생했습니다.");
+      console.error(error);
+    }
+  };
 
   return (
     <TradingSectionContainer>
@@ -140,9 +174,18 @@ const TradingSection = () => {
           <InputWrapper>
             매수 가격 (USD)
             <TradingInputWrapper>
-              <TradingInput value={price} type="number" min="0" />
-              <ValueButton onClick={() => setPrice(price + 1000)}>+</ValueButton>
-              <ValueButton onClick={() => setPrice(price - 1000)}>-</ValueButton>
+              <TradingInput
+                value={price}
+                onChange={(e) => setPrice(Number(e.target.value))}
+                type="number"
+                min="0"
+              />
+              <ValueButton onClick={() => setPrice(price + 1000)}>
+                +
+              </ValueButton>
+              <ValueButton onClick={() => setPrice(price - 1000)}>
+                -
+              </ValueButton>
             </TradingInputWrapper>
           </InputWrapper>
           <InputWrapper>
@@ -160,7 +203,7 @@ const TradingSection = () => {
           </InputWrapper>
         </InputContainer>
         <TradingSectionFooter>
-          <Trading>매수</Trading>
+          <Trading onClick={handleOrder}>매수</Trading>
         </TradingSectionFooter>
       </TradingSectionBody>
     </TradingSectionContainer>
