@@ -4,6 +4,7 @@ import Login from "../feature/users/LoginForm";
 import { useState } from "react";
 
 const UserTemplate = styled.div`
+  background-color: var(--primary-background-color);
   display: flex;
   justify-content: center;
   align-items: center;

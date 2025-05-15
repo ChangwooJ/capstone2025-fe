@@ -44,7 +44,7 @@ const UserName = styled.div`
 const LogoutButton = styled.button`
   padding: 0 5px;
   border-radius: 10px;
-  border: 1px solid gray;
+  border: 1px solid white;
   background-color: #72dac8;
   color: white;
   cursor: pointer;
@@ -56,6 +56,28 @@ const NotLogin = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
+`;
+
+const MenuButtonContainer = styled.div`
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+`;
+
+const MenuButton = styled(Link)`
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #72dac8;
+  background-color: white;
+  color: #333;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s;
+
+  &:hover {
+    background-color: #72dac8;
+    color: white;
+  }
 `;
 
 interface UserInfo {
@@ -137,6 +159,10 @@ console.log(assets);
               <LogoutButton onClick={handleLogout}>로그아웃</LogoutButton>
             </UserTop>
           </UserInfo>
+          <MenuButtonContainer>
+            <MenuButton to="/investments">투자내역</MenuButton>
+            <MenuButton to="/mypage/profile-edit">내 정보 수정</MenuButton>
+          </MenuButtonContainer>
           {assets ? (
             <div style={{ marginTop: "16px" }}>
               <div style={{ fontWeight: "bold" }}>내 업비트 자산</div>
@@ -144,7 +170,7 @@ console.log(assets);
                 {assets.map((asset) => (
                   <li key={asset.currency}>
                     {asset.currency}: {Number(asset.balance).toLocaleString()}{" "}
-                    (평균매입가: {asset.avg_buy_price})
+                    (평균매입가: {Number(asset.avg_buy_price).toLocaleString()} KRW)
                   </li>
                 ))}
               </ul>
