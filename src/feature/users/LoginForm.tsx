@@ -81,7 +81,7 @@ const Login = ({ setButtonState }: LoginProps) => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      const response = await axios.post("http://localhost:8000/user/login", {
+      const response = await axios.post("http://13.60.194.78/user/login", {
         email: form.email,
         password: form.password,
       });

@@ -102,7 +102,7 @@ const MyWallet  = () => {
 
   const fetchInfo = async () => {
     try {
-      const response = await axios.get('http://localhost:8000/user/info', {
+      const response = await axios.get('http://13.60.194.78/user/info', {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -121,7 +121,7 @@ const MyWallet  = () => {
 
   const fetchAssets = async () => {
     try {
-      const response = await axios.get('http://localhost:8000/user/mywallet');
+      const response = await axios.get('http://13.60.194.78/user/mywallet');
       setAssets(response.data);
     } catch (error) {
       console.error("업비트 자산 불러오기 실패:", error);
