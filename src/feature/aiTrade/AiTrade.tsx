@@ -59,7 +59,8 @@ const AiTrade = () => {
     const checkAiTradeStatus = async () => {
         try {
             const response = await axios.get('http://localhost:8000/user/ai/status');
-            setIsRunning(response.data.isRunning);
+            setIsRunning(response.data.status);
+            console.log(response);
         } catch (error) {
             console.error('AI 거래 상태 확인 중 오류 발생:', error);
         }
