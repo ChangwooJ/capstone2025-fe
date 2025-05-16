@@ -6,6 +6,7 @@ interface AuthState {
   setToken: (
     token: string,
   ) => void;
+  clearToken: () => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -16,6 +17,9 @@ export const useAuthStore = create<AuthState>()(
       setToken: (token) => {
         set({ token })
       },
+      
+      clearToken: () =>
+        set({ token: null }),
     }),
     { name: "auth-storage" }
   )
