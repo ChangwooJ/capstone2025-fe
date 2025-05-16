@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { useEffect, useState } from 'react';
-import { PieChart, Pie, Cell, Tooltip, Legend  } from 'recharts';
+import { PieChart, Pie, Cell, Tooltip } from 'recharts';
 import styled from 'styled-components';
 import { useAuthStore } from '../../store/useAuthStore';
 
@@ -100,10 +100,19 @@ interface UpbitAsset {
   unit_currency: string;
 }
 
-
 interface AssetResponse {
   assets: UpbitAsset[];
   btc_current_price: number;
+}
+
+interface CustomizedLabelProps {
+  cx: number;
+  cy: number;
+  midAngle: number;
+  innerRadius: number;
+  outerRadius: number;
+  percent: number;
+  index: number;
 }
 
 const Investment = () => {
@@ -188,7 +197,7 @@ const Investment = () => {
   ];
 
   // 커스텀 라벨 렌더러 (파이차트 각 섹터에 퍼센트 표시)
-  const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index }) => {
+  const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, index }: CustomizedLabelProps) => {
     const RADIAN = Math.PI / 180;
     const radius = innerRadius + (outerRadius - innerRadius) * 0.7;
     const x = cx + radius * Math.cos(-midAngle * RADIAN);
@@ -202,7 +211,7 @@ const Investment = () => {
   };
 
   // 커스텀 툴팁 포맷터
-  const tooltipFormatter = (value, name) => {
+  const tooltipFormatter = (name: string) => {
     const item = pieData.find(d => d.name === name);
     return [`${item?.percent}%`, name];
   };
@@ -255,11 +264,11 @@ const Investment = () => {
               label={renderCustomizedLabel}
               dataKey="value"
             >
-              {pieData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+              {pieData.map((index) => (
+                <Cell key={`cell-${index}`} fill={COLORS[Number(index) % COLORS.length]} />
               ))}
             </Pie>
-            {/* 중앙 텍스트 */}
+            
             <text
               x={200}
               y={150}
@@ -300,7 +309,7 @@ const Investment = () => {
           </tr>
         </thead>
         <tbody>
-          {assets
+          {assets!
             .filter(asset => asset.currency !== 'KRW')
             .map((asset) => (
             <tr key={asset.currency}>
@@ -308,11 +317,11 @@ const Investment = () => {
               <td>{asset.balance}</td>
               <td>{Number(asset.avg_buy_price).toLocaleString()} KRW</td>
               <td>{btcCurrentPrice.toLocaleString()} KRW</td>
-              <td>{(asset.balance * btcCurrentPrice).toLocaleString()} KRW</td>
+              <td>{(Number(asset.balance) * btcCurrentPrice).toLocaleString()} KRW</td>
               <td style={{ color: totalProfit >= 0 ? '#e53935' : '#1e88e5' }}>
                 {totalProfit.toLocaleString()} KRW
               </td>
-              <td style={{ color: profitRate >= 0 ? '#e53935' : '#1e88e5' }}>
+              <td style={{ color: Number(profitRate) >= 0 ? '#e53935' : '#1e88e5' }}>
                 {profitRate}%
               </td>
               <td>
