@@ -2,6 +2,7 @@ import styled from "styled-components";
 import PriceInquiry from "../feature/priceInquiry/PriceInquiry";
 import TradingSection from "../feature/automaticTrading/TradingSection";
 import MyWallet from "../feature/myWallet/MyWallet";
+import AiTrade from "../feature/aiTrade/AiTrade";
 
 const ExchangeWrapper = styled.div`
   display: flex;
@@ -34,6 +35,7 @@ const Exchange = () => {
       </ExchangeInfo>
       <MyInfo>
         <MyWallet />
+        <AiTrade />
       </MyInfo>
     </ExchangeWrapper>
   );
