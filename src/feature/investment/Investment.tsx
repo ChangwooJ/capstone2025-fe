@@ -123,7 +123,7 @@ const Investment = () => {
 
   const fetchAssets = async () => {
     try {
-      const response = await axios.get<AssetResponse>('http://localhost:8000/user/myasset');
+      const response = await axios.get<AssetResponse>('http://13.60.194.78/user/myasset');
       setAssets(response.data.assets);
       setBtcCurrentPrice(response.data.btc_current_price); // BTC 현재가 상태 저장
     } catch (error) {
@@ -268,7 +268,7 @@ const Investment = () => {
                 <Cell key={`cell-${index}`} fill={COLORS[Number(index) % COLORS.length]} />
               ))}
             </Pie>
-            
+
             <text
               x={200}
               y={150}

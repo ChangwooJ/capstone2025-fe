@@ -58,7 +58,7 @@ const AiTrade = () => {
     // AI 거래 상태 확인
     const checkAiTradeStatus = async () => {
         try {
-            const response = await axios.get('http://localhost:8000/user/ai/status');
+            const response = await axios.get('http://13.60.194.78/user/ai/status');
             setIsRunning(response.data.status);
             console.log(response);
         } catch (error) {
@@ -70,7 +70,7 @@ const AiTrade = () => {
     const toggleAiTrade = async () => {
         setIsLoading(true);
         try {
-            const endpoint = isRunning ? 'http://localhost:8000/user/ai/stop' : 'http://localhost:8000/user/ai/start';
+            const endpoint = isRunning ? 'http://13.60.194.78/user/ai/stop' : 'http://13.60.194.78/user/ai/start';
             await axios.post(endpoint);
             setIsRunning(!isRunning);
         } catch (error) {
