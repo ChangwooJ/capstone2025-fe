@@ -28,7 +28,7 @@ const PriceInquiry = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const res = await fetch('http://13.60.194.78/api/exchangePrice?interval=minutes/10&count=200');
+        const res = await fetch('https://13.60.194.78/api/exchangePrice?interval=minutes/10&count=200');
         
         if (!res.ok) {
           throw new Error('API 요청 실패');

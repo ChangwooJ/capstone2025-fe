@@ -123,7 +123,7 @@ const Investment = () => {
 
   const fetchAssets = async () => {
     try {
-      const response = await axios.get<AssetResponse>('http://13.60.194.78/user/myasset');
+      const response = await axios.get<AssetResponse>('https://13.60.194.78/user/myasset');
       setAssets(response.data.assets);
       setBtcCurrentPrice(response.data.btc_current_price); // BTC 현재가 상태 저장
     } catch (error) {
