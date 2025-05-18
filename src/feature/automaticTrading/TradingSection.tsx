@@ -108,7 +108,7 @@ const TradingSection = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const res = await fetch("https://13.60.194.78/api/exchangePrice");
+      const res = await fetch("https://nexbit.p-e.kr/api/exchangePrice");
       const data = await res.json();
 
       if (data.length > 0) {
@@ -126,7 +126,7 @@ const TradingSection = () => {
     }
 
     try {
-      const res = await fetch("https://13.60.194.78/api/order", {
+      const res = await fetch("https://nexbit.p-e.kr/api/order", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

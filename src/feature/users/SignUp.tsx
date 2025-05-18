@@ -67,7 +67,7 @@ const SignUp = () => {
       return;
     }
     try {
-      await axios.post("https://13.60.194.78/user/signup", {
+      await axios.post("https://nexbit.p-e.kr/user/signup", {
         email: form.email,
         password: form.password,
         username: form.username,

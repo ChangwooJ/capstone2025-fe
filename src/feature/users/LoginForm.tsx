@@ -81,7 +81,7 @@ const Login = ({ setButtonState }: LoginProps) => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      const response = await axios.post("https://13.60.194.78/user/login", {
+      const response = await axios.post("https://nexbit.p-e.kr/user/login", {
         email: form.email,
         password: form.password,
       });

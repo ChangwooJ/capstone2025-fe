@@ -102,7 +102,7 @@ const MyWallet  = () => {
 
   const fetchInfo = async () => {
     try {
-      const response = await axios.get('https://13.60.194.78/user/info', {
+      const response = await axios.get('https://nexbit.p-e.kr/user/info', {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -121,7 +121,7 @@ const MyWallet  = () => {
 
   const fetchAssets = async () => {
     try {
-      const response = await axios.get('https://13.60.194.78/user/mywallet');
+      const response = await axios.get('https://nexbit.p-e.kr/user/mywallet');
       setAssets(response.data);
     } catch (error) {
       console.error("업비트 자산 불러오기 실패:", error);
