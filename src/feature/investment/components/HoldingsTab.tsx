@@ -1,38 +1,257 @@
 import axios from 'axios';
 import { useEffect, useState } from 'react';
-import { PieChart, Pie, Cell, Tooltip } from 'recharts';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 import styled from 'styled-components';
 import { SummaryCard, ChartContainer, AssetTable } from '../styles/common';
 
-// HoldingsTab 전용 스타일 컴포넌트
 const SummaryGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 16px;
-  margin-bottom: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+`;
+
+const StyledSummaryCard = styled(SummaryCard)`
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.04);
+  }
+
+  h3 {
+    color: #64748b;
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  div {
+    color: #1e293b;
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+`;
+
+const ChartWrapper = styled(ChartContainer)`
+  background: white;
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+  margin-bottom: 2rem;
+
+  h3 {
+    color: #1e293b;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    &::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(to right, #e2e8f0, transparent);
+    }
+  }
+`;
+
+const ChartContent = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 2rem;
+  min-height: 400px;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const ChartSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+`;
+
+const ChartInfo = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 12px;
+  margin-top: 1rem;
+`;
+
+const InfoItem = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.75rem;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+
+  span:first-child {
+    font-size: 0.75rem;
+    color: #64748b;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  span:last-child {
+    font-size: 1.125rem;
+    color: #1e293b;
+    font-weight: 600;
+  }
 `;
 
 const LegendContainer = styled.div`
   display: flex;
   flex-direction: column;
-  margin-top: 20px;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: #f8fafc;
+  border-radius: 12px;
+  height: fit-content;
 `;
 
 const LegendItem = styled.div`
   display: flex;
   align-items: center;
-  margin-bottom: 8px;
+  padding: 1rem;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: translateX(4px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+`;
+
+const LegendText = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+
+  .asset-name {
+    font-weight: 600;
+    color: #1e293b;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .asset-value {
+    font-size: 0.875rem;
+    color: #64748b;
+  }
+
+  .asset-percent {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #3b82f6;
+    background: #eff6ff;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    width: fit-content;
+  }
+`;
+
+const AssetIcon = styled.div<{ $color: string }>`
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: ${props => props.$color};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 0.75rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 `;
 
 const ColorBox = styled.div<{ color: string }>`
-  width: 12px;
-  height: 12px;
+  width: 16px;
+  height: 16px;
   background-color: ${props => props.color};
-  margin-right: 8px;
-  border-radius: 2px;
+  margin-right: 12px;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 `;
 
-const COLORS = ['#8ca252', '#3182bd'];
+const StyledAssetTable = styled(AssetTable)`
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+
+  thead {
+    background: #f8fafc;
+    
+    th {
+      padding: 1rem;
+      font-weight: 600;
+      color: #64748b;
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      letter-spacing: 0.5px;
+      border-bottom: 2px solid #e2e8f0;
+    }
+  }
+
+  tbody {
+    tr {
+      transition: background-color 0.2s ease;
+
+      &:hover {
+        background-color: #f8fafc;
+      }
+
+      td {
+        padding: 1rem;
+        color: #1e293b;
+        border-bottom: 1px solid #e2e8f0;
+      }
+    }
+  }
+`;
+
+const SellButton = styled.button`
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  font-weight: 600;
+  font-size: 0.875rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(239, 68, 68, 0.3);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+`;
+
+const COLORS = ['#3b82f6', '#10b981'];
 
 interface UpbitAsset {
   currency: string;
@@ -165,70 +384,126 @@ const HoldingsTab = ({ token, onMetricsUpdate }: HoldingsTabProps) => {
     ];
   };
 
+  const getAssetIcon = (currency: string) => {
+    switch (currency) {
+      case 'BTC':
+        return '₿';
+      case 'KRW':
+        return '₩';
+      default:
+        return currency.charAt(0);
+    }
+  };
+
   return (
     <>
       <SummaryGrid>
-        <SummaryCard>
+        <StyledSummaryCard>
           <h3>총 보유자산</h3>
           <div>{totalAssets.toLocaleString()} KRW</div>
-        </SummaryCard>
-        <SummaryCard>
+        </StyledSummaryCard>
+        <StyledSummaryCard>
           <h3>총 매수금액</h3>
           <div>{totalInvestment.toLocaleString()} KRW</div>
-        </SummaryCard>
-        <SummaryCard>
+        </StyledSummaryCard>
+        <StyledSummaryCard>
           <h3>총 평가손익</h3>
-          <div style={{ color: totalProfit >= 0 ? '#e53935' : '#1e88e5' }}>
-            {totalProfit.toLocaleString()} KRW ({profitRate}%)
+          <div style={{ 
+            color: totalProfit >= 0 ? '#10b981' : '#ef4444',
+            display: 'flex',
+            alignItems: 'baseline',
+            gap: '0.5rem'
+          }}>
+            {totalProfit.toLocaleString()} KRW
+            <span style={{ 
+              fontSize: '0.875rem',
+              color: totalProfit >= 0 ? '#059669' : '#dc2626',
+              fontWeight: '500'
+            }}>
+              ({profitRate}%)
+            </span>
           </div>
-        </SummaryCard>
+        </StyledSummaryCard>
       </SummaryGrid>
 
-      <ChartContainer>
-        <h3>보유 비중</h3>
-        <div style={{ display: 'flex', justifyContent: 'center', position: 'relative' }}>
-          <PieChart width={400} height={300}>
-            <Pie
-              data={pieData}
-              cx="50%"
-              cy="50%"
-              innerRadius={60}
-              outerRadius={100}
-              labelLine={false}
-              label={renderCustomizedLabel}
-              dataKey="value"
-            >
-              {pieData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-              ))}
-            </Pie>
+      <ChartWrapper>
+        <h3>자산 비중</h3>
+        <ChartContent>
+          <ChartSection>
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={pieData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={80}
+                  outerRadius={120}
+                  labelLine={false}
+                  label={renderCustomizedLabel}
+                  dataKey="value"
+                >
+                  {pieData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip 
+                  formatter={tooltipFormatter}
+                  contentStyle={{
+                    background: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                    padding: '0.75rem'
+                  }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
 
-            <text
-              x={200}
-              y={150}
-              textAnchor="middle"
-              dominantBaseline="middle"
-              fontSize={16}
-              fill="#333"
-            >
-              보유 비중
-              <tspan x={200} dy={20}>(%)</tspan>
-            </text>
-            <Tooltip formatter={tooltipFormatter} />
-          </PieChart>
+            <ChartInfo>
+              <InfoItem>
+                <span>총 자산 가치</span>
+                <span>{totalAssets.toLocaleString()} KRW</span>
+              </InfoItem>
+              <InfoItem>
+                <span>BTC 보유량</span>
+                <span>{assets?.find(a => a.currency === 'BTC')?.balance || '0'} BTC</span>
+              </InfoItem>
+              <InfoItem>
+                <span>현재 BTC 가격</span>
+                <span>{btcCurrentPrice.toLocaleString()} KRW</span>
+              </InfoItem>
+              <InfoItem>
+                <span>KRW 보유액</span>
+                <span>{assets?.find(a => a.currency === 'KRW')?.balance || '0'} KRW</span>
+              </InfoItem>
+            </ChartInfo>
+          </ChartSection>
 
           <LegendContainer>
             {pieData.map((entry, index) => (
               <LegendItem key={`legend-${index}`}>
                 <ColorBox color={COLORS[index % COLORS.length]} />
-                <span>{entry.name}</span>
-                <span style={{ marginLeft: '8px' }}>{entry.percent}%</span>
+                <LegendText>
+                  <div className="asset-name">
+                    <AssetIcon $color={COLORS[index % COLORS.length]}>
+                      {getAssetIcon(entry.name)}
+                    </AssetIcon>
+                    {entry.name}
+                  </div>
+                  <div className="asset-value">
+                    {entry.value.toLocaleString()} KRW
+                  </div>
+                  <div className="asset-percent">
+                    {entry.percent}%
+                  </div>
+                </LegendText>
               </LegendItem>
             ))}
           </LegendContainer>
-        </div>
-      </ChartContainer>
-      <AssetTable>
+        </ChartContent>
+      </ChartWrapper>
+
+      <StyledAssetTable>
         <thead>
           <tr>
             <th>자산</th>
@@ -243,49 +518,42 @@ const HoldingsTab = ({ token, onMetricsUpdate }: HoldingsTabProps) => {
         </thead>
         <tbody>
           {assets!
-            .filter(asset => asset.currency !== 'KRW') // KRW 제외
+            .filter(asset => asset.currency !== 'KRW')
             .map((asset) => {
               const balance = parseFloat(asset.balance);
               const avgBuyPrice = parseFloat(asset.avg_buy_price);
-              const currentValue = balance * btcCurrentPrice; // 현재가 기준 평가금액
-              const investmentValue = balance * avgBuyPrice; // 매수 금액
-              const profit = currentValue - investmentValue; // 평가 손익
-              // 투자금액이 0보다 큰 경우에만 수익률 계산, 아니면 0
+              const currentValue = balance * btcCurrentPrice;
+              const investmentValue = balance * avgBuyPrice;
+              const profit = currentValue - investmentValue;
               const profitRate = investmentValue > 0 ? ((profit / investmentValue) * 100) : 0;
 
               return (
                 <tr key={asset.currency}>
-                  <td>{asset.currency}</td>
-                  <td>{asset.balance}</td>
+                  <td style={{ fontWeight: '600' }}>{asset.currency}</td>
+                  <td>{parseFloat(asset.balance).toFixed(8)}</td>
                   <td>{avgBuyPrice.toLocaleString()} KRW</td>
                   <td>{btcCurrentPrice.toLocaleString()} KRW</td>
                   <td>{currentValue.toLocaleString()} KRW</td>
-                  <td style={{ color: profit >= 0 ? '#e53935' : '#1e88e5' }}>
+                  <td style={{ 
+                    color: profit >= 0 ? '#10b981' : '#ef4444',
+                    fontWeight: '600'
+                  }}>
                     {profit.toLocaleString()} KRW
                   </td>
-                  <td style={{ color: profitRate >= 0 ? '#e53935' : '#1e88e5' }}>
+                  <td style={{ 
+                    color: profitRate >= 0 ? '#10b981' : '#ef4444',
+                    fontWeight: '600'
+                  }}>
                     {profitRate.toFixed(2)}%
                   </td>
                   <td>
-                    <button
-                      style={{
-                        padding: '5px 10px',
-                        borderRadius: '10px',
-                        backgroundColor: '#72dac8',
-                        color: 'white',
-                        border: 'none',
-                        boxShadow: '0 0 4px rgba(0, 0, 0, 0.2)',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      매도
-                    </button>
+                    <SellButton>매도</SellButton>
                   </td>
                 </tr>
               );
             })}
         </tbody>
-      </AssetTable>
+      </StyledAssetTable>
     </>
   );
 };

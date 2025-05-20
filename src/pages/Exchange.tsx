@@ -7,23 +7,27 @@ import AiTrade from "../feature/aiTrade/AiTrade";
 const ExchangeWrapper = styled.div`
   display: flex;
   width: 100%;
-  height: fit-content;
-  background-color: var(--primary-background-color);
+  min-height: calc(100vh - 80px);
+  background-color: #f8f9fa;
   box-sizing: border-box;
-  padding: 2%;
-  gap: 2%;
+  padding: 2rem;
+  gap: 2rem;
 `;
 
 const ExchangeInfo = styled.div`
   display: flex;
   flex-direction: column;
   width: 70%;
+  gap: 2rem;
   height: fit-content;
 `;
 
 const MyInfo = styled.div`
-  width: 28%;
+  width: 30%;
   height: fit-content;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
 `;
 
 const Exchange = () => {

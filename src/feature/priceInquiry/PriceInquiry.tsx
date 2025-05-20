@@ -7,16 +7,32 @@ const PriceInfoWrapper = styled.div`
   width: 100%;
   height: fit-content;
   background-color: white;
-  border-radius: 10px;
-  box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
-  padding: 2%;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 2rem;
+  transition: all 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  }
 `;
 
 const Loading = styled.div`
-  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  font-size: 1.1rem;
+  color: #6c757d;
+  background-color: #f8f9fa;
+  border-radius: 12px;
   padding: 2rem;
-  font-size: 1.2rem;
-  color: #666;
+`;
+
+const ErrorMessage = styled(Loading)`
+  color: #dc3545;
+  background-color: #fff5f5;
+  border: 1px solid #ffcdd2;
 `;
 
 const PriceInquiry = () => {
@@ -56,7 +72,7 @@ const PriceInquiry = () => {
       {loading ? (
         <Loading>데이터를 불러오는 중입니다...</Loading>
       ) : error ? (
-        <Loading>{error}</Loading>
+        <ErrorMessage>{error}</ErrorMessage>
       ) : (
         <>
           <PriceTitle priceData={priceData} />
