@@ -311,10 +311,9 @@ interface CustomizedLabelProps {
 
 interface HoldingsTabProps {
   token: string | null;
-  onMetricsUpdate: (totalProfit: number, profitRate: number | string) => void;
 }
 
-const HoldingsTab = ({ token, onMetricsUpdate }: HoldingsTabProps) => {
+const HoldingsTab = ({ token }: HoldingsTabProps) => {
   const [assets, setAssets] = useState<UpbitAsset[] | null>([]);
   const [btcCurrentPrice, setBtcCurrentPrice] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -485,7 +484,7 @@ const HoldingsTab = ({ token, onMetricsUpdate }: HoldingsTabProps) => {
                   label={renderCustomizedLabel}
                   dataKey="value"
                 >
-                  {pieData.map((entry, index) => (
+                  {pieData.map((_entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
@@ -523,21 +522,21 @@ const HoldingsTab = ({ token, onMetricsUpdate }: HoldingsTabProps) => {
           </ChartSection>
 
           <LegendContainer>
-            {pieData.map((entry, index) => (
+            {pieData.map(({ name, value, percent }: { name: string; value: number; percent: string }, index: number) => (
               <LegendItem key={`legend-${index}`}>
                 <ColorBox color={COLORS[index % COLORS.length]} />
                 <LegendText>
                   <div className="asset-name">
                     <AssetIcon $color={COLORS[index % COLORS.length]}>
-                      {getAssetIcon(entry.name)}
+                      {getAssetIcon(name)}
                     </AssetIcon>
-                    {entry.name}
+                    {name}
                   </div>
                   <div className="asset-value">
-                    {entry.value.toLocaleString()} KRW
+                    {value.toLocaleString()} KRW
                   </div>
                   <div className="asset-percent">
-                    {entry.percent}%
+                    {percent}%
                   </div>
                 </LegendText>
               </LegendItem>

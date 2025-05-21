@@ -1,6 +1,5 @@
 import styled from "styled-components";
 import { useState, useEffect } from "react";
-import { useAuthStore } from "../../store/useAuthStore";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
@@ -92,18 +91,19 @@ const ErrorMessage = styled.div`
   border: 1px solid #fee2e2;
 `;
 
-const AiTrade = () => {
-  const token = useAuthStore((state) => state.token);
-  const navigate = useNavigate();
+interface AiTradeProps {
+  token: string | null;
+}
+
+const AiTrade = ({ token }: AiTradeProps) => {
   const [isActive, setIsActive] = useState(false);
-  const [error, setError] = useState<string>("");
-  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   // AI 거래 상태 확인
   useEffect(() => {
     const checkAiTradeStatus = async () => {
       if (!token) {
-        setIsLoading(false);
         return;
       }
 
@@ -119,8 +119,6 @@ const AiTrade = () => {
         setIsActive(response.data.status);
       } catch (error: any) {
         setError(error.response?.data?.message || "AI 거래 상태 확인 중 오류가 발생했습니다.");
-      } finally {
-        setIsLoading(false);
       }
     };
 
@@ -133,7 +131,6 @@ const AiTrade = () => {
       return;
     }
 
-    setIsLoading(true);
     try {
       const endpoint = isActive ? 'https://nexbit.p-e.kr/user/ai/stop' : 'https://nexbit.p-e.kr/user/ai/start';
       const response = await axios.post(
@@ -152,8 +149,6 @@ const AiTrade = () => {
       }
     } catch (error: any) {
       setError(error.response?.data?.message || "AI 거래 상태 변경 중 오류가 발생했습니다.");
-    } finally {
-      setIsLoading(false);
     }
   };
 
