@@ -3,6 +3,7 @@ import PriceInquiry from "../feature/priceInquiry/PriceInquiry";
 import TradingSection from "../feature/automaticTrading/TradingSection";
 import MyWallet from "../feature/myWallet/MyWallet";
 import AiTrade from "../feature/aiTrade/AiTrade";
+import { useAuthStore } from "../store/useAuthStore";
 
 const ExchangeWrapper = styled.div`
   display: flex;
@@ -31,6 +32,8 @@ const MyInfo = styled.div`
 `;
 
 const Exchange = () => {
+  const token = useAuthStore((state) => state.token);
+
   return (
     <ExchangeWrapper>
       <ExchangeInfo>
@@ -39,7 +42,7 @@ const Exchange = () => {
       </ExchangeInfo>
       <MyInfo>
         <MyWallet />
-        <AiTrade />
+        <AiTrade token={token} />
       </MyInfo>
     </ExchangeWrapper>
   );

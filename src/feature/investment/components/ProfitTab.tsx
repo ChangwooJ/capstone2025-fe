@@ -2,7 +2,7 @@ import styled, { keyframes } from 'styled-components';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { SummaryCard, ChartContainer, AssetTable } from '../styles/common';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 const DateRange = styled.div`
   margin-bottom: 24px;
@@ -81,7 +81,7 @@ const LoadingOverlay = styled.div`
 
 const TableContainer = styled.div`
   position: relative;
-  min-height: 200px;
+  min-height: 400px;
 `;
 
 interface UpbitAsset {
@@ -116,6 +116,7 @@ interface DailyProfit {
   cumulativeProfitRate: number;
   openingBalance: number;
   closingBalance: number;
+  negativeCumulativeProfitRate?: number; // 0보다 작은 누적 수익률
 }
 
 interface ProfitTabProps {
@@ -125,11 +126,6 @@ interface ProfitTabProps {
 const formatDate = (dateStr: string) => {
   const date = new Date(dateStr);
   return `${date.getMonth() + 1}.${date.getDate()}`;
-};
-
-const formatFullDate = (dateStr: string) => {
-  const date = new Date(dateStr);
-  return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
 };
 
 const ProfitTab = ({ token }: ProfitTabProps) => {
