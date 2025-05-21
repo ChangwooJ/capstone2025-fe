@@ -127,7 +127,6 @@ const TradingSection = () => {
   const [error, setError] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // 현재 BTC 가격 가져오기
   useEffect(() => {
     const fetchCurrentPrice = async () => {
       try {
@@ -136,7 +135,6 @@ const TradingSection = () => {
           'https://nexbit.p-e.kr/api/exchangePrice?interval=minutes/10&count=1'
         );
         
-        // 응답 데이터 구조 확인 및 안전한 처리
         if (!response.data || !Array.isArray(response.data) || response.data.length === 0) {
           console.error('API 응답이 올바르지 않습니다:', response.data);
           setError('가격 정보를 받아올 수 없습니다.');
@@ -144,13 +142,10 @@ const TradingSection = () => {
         }
 
         const latestData = response.data[0];
-        console.log('최신 가격 데이터:', latestData);
 
-        // close 필드에서 현재 가격 가져오기
         const price = latestData.close;
         
         if (typeof price === 'number' && !isNaN(price) && price > 0) {
-          console.log('현재 가격 설정:', price);
           setCurrentPrice(price);
           setPrice(price.toString());
           setError('');

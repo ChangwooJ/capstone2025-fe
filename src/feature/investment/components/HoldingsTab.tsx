@@ -328,7 +328,6 @@ const HoldingsTab = ({ token }: HoldingsTabProps) => {
     setLoading(true);
     try {
       const response = await axios.get<AssetResponse>('https://nexbit.p-e.kr/user/myasset');
-      console.log(response);
       setAssets(response.data.assets);
       setBtcCurrentPrice(response.data.btc_current_price);
     } catch (error: any) {

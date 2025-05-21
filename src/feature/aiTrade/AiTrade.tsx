@@ -100,7 +100,6 @@ const AiTrade = ({ token }: AiTradeProps) => {
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  // AI 거래 상태 확인
   useEffect(() => {
     const checkAiTradeStatus = async () => {
       if (!token) {
