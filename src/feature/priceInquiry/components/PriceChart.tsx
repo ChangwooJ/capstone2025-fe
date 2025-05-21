@@ -12,7 +12,6 @@ const PriceChart = React.memo(({ priceData }: PriceTitleProps) => {
   const candleSeries = useRef<ISeriesApi<'Candlestick'> | null>(null);
   const volumeSeries = useRef<ISeriesApi<'Histogram'> | null>(null);
 
-  // 데이터 변환 로직을 useMemo로 캐싱
   const chartData = useMemo(() => {
     return priceData.map((item) => ({
       time: Math.floor(new Date(item.datetime).getTime() / 1000) as Time,
@@ -31,11 +30,9 @@ const PriceChart = React.memo(({ priceData }: PriceTitleProps) => {
     }));
   }, [priceData]);
 
-  // 차트 초기 생성은 한 번만
   useEffect(() => {
     if (!chartRef.current) return;
 
-    // 차트 인스턴스가 없을 때만 생성
     if (!chartInstance.current) {
       chartInstance.current = createChart(chartRef.current, {
         width: chartRef.current.clientWidth,
@@ -45,9 +42,9 @@ const PriceChart = React.memo(({ priceData }: PriceTitleProps) => {
         crosshair: { mode: 0 },
         timeScale: { 
           timeVisible: true,
-          shiftVisibleRangeOnNewBar: false, // 새 데이터에 따른 자동 이동 방지
-          fixLeftEdge: true, // 왼쪽 가장자리 고정
-          fixRightEdge: true // 오른쪽 가장자리 고정
+          shiftVisibleRangeOnNewBar: false,
+          fixLeftEdge: true,
+          fixRightEdge: true 
         }
       });
 
@@ -59,7 +56,6 @@ const PriceChart = React.memo(({ priceData }: PriceTitleProps) => {
         scaleMargins: { top: 0.85, bottom: 0 },
       });
 
-      // 창 크기 변경 시 차트 크기 조정
       const resizeObserver = new ResizeObserver(() => {
         if (chartRef.current && chartInstance.current) {
           chartInstance.current.applyOptions({
@@ -77,14 +73,12 @@ const PriceChart = React.memo(({ priceData }: PriceTitleProps) => {
     }
   }, []);
 
-  // 데이터만 업데이트
   useEffect(() => {
     if (!candleSeries.current || !volumeSeries.current || priceData.length === 0) return;
     
     candleSeries.current.setData(chartData);
     volumeSeries.current.setData(volumeData);
     
-    // 최신 데이터로 시간축 조정
     chartInstance.current?.timeScale().fitContent();
   }, [chartData, volumeData]);
 
@@ -93,10 +87,10 @@ const PriceChart = React.memo(({ priceData }: PriceTitleProps) => {
       ref={chartRef}
       style={{
         width: "100%",
-        height: "350px", // fit-content 대신 고정 높이 사용
+        height: "350px",
         border: "1px solid black",
-        overflow: "hidden", // 오버플로우 숨김
-        position: "relative", // 포지션 설정
+        overflow: "hidden",
+        position: "relative",
       }}
     />
   );

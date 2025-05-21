@@ -116,7 +116,7 @@ interface DailyProfit {
   cumulativeProfitRate: number;
   openingBalance: number;
   closingBalance: number;
-  negativeCumulativeProfitRate?: number; // 0보다 작은 누적 수익률
+  negativeCumulativeProfitRate?: number;
 }
 
 interface ProfitTabProps {
@@ -146,8 +146,8 @@ const ProfitTab = ({ token }: ProfitTabProps) => {
       setIsLoading(true);
       try {
         const assetResponse = await axios.get<AssetResponse>('https://nexbit.p-e.kr/user/myasset');
-
         const btcAsset = assetResponse.data.assets.find(a => a.currency === 'BTC');
+
         if (!btcAsset) {
           console.log('BTC 자산이 없습니다.');
           return;
