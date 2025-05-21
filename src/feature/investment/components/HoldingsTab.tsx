@@ -1,8 +1,41 @@
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import { SummaryCard, ChartContainer, AssetTable } from '../styles/common';
+
+const spin = keyframes`
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+`;
+
+const Spinner = styled.div`
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #3b82f6;
+  border-radius: 50%;
+  animation: ${spin} 1s linear infinite;
+  margin: 20px auto;
+`;
+
+const LoadingOverlay = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+`;
+
+const TableContainer = styled.div`
+  position: relative;
+  min-height: 400px;
+`;
 
 const SummaryGrid = styled.div`
   display: grid;
@@ -284,12 +317,16 @@ interface HoldingsTabProps {
 const HoldingsTab = ({ token, onMetricsUpdate }: HoldingsTabProps) => {
   const [assets, setAssets] = useState<UpbitAsset[] | null>([]);
   const [btcCurrentPrice, setBtcCurrentPrice] = useState(0);
+  const [loading, setLoading] = useState(true);
 
   const fetchAssets = async () => {
     if (!token) {
       console.log("토큰이 없습니다. 자산을 가져올 수 없습니다.");
+      setAssets(null);
+      setLoading(false);
       return;
     }
+    setLoading(true);
     try {
       const response = await axios.get<AssetResponse>('https://nexbit.p-e.kr/user/myasset');
       console.log(response);
@@ -297,6 +334,9 @@ const HoldingsTab = ({ token, onMetricsUpdate }: HoldingsTabProps) => {
       setBtcCurrentPrice(response.data.btc_current_price);
     } catch (error: any) {
       console.error("업비트 자산 불러오기 실패:", error.response?.data || error.message);
+      setAssets(null);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -394,7 +434,12 @@ const HoldingsTab = ({ token, onMetricsUpdate }: HoldingsTabProps) => {
   };
 
   return (
-    <>
+    <TableContainer>
+      {loading && (
+        <LoadingOverlay>
+          <Spinner />
+        </LoadingOverlay>
+      )}
       <SummaryGrid>
         <StyledSummaryCard>
           <h3>총 보유자산</h3>
@@ -552,7 +597,7 @@ const HoldingsTab = ({ token, onMetricsUpdate }: HoldingsTabProps) => {
             })}
         </tbody>
       </StyledAssetTable>
-    </>
+    </TableContainer>
   );
 };
 
