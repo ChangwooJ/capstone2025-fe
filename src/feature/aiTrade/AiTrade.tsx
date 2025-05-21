@@ -1,111 +1,185 @@
-import styled, { keyframes } from "styled-components";
+import styled from "styled-components";
 import { useState, useEffect } from "react";
-import axios from "axios";
 import { useAuthStore } from "../../store/useAuthStore";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
-const Container = styled.div`
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 20px;
-    padding: 20px;
+const AiTradeWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  background-color: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 2rem;
 `;
 
-const StatusContainer = styled.div`
-    display: flex;
-    align-items: center;
-    gap: 10px;
+const AiTradeTitle = styled.h2`
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 1.5rem;
+  letter-spacing: -0.5px;
 `;
 
-const Button = styled.button<{ isRunning: boolean }>`
-    padding: 10px 24px;
-    border: none;
-    border-radius: 6px;
-    background: ${({ isRunning }) => (isRunning ? '#e53e3e' : '#38a169')};
-    color: white;
-    font-size: 1rem;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background 0.2s;
-    &:hover {
-        background: ${({ isRunning }) => (isRunning ? '#c53030' : '#2f855a')};
-    }
-    &:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-    }
+const AiTradeDescription = styled.p`
+  font-size: 1rem;
+  color: #6b7280;
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
 `;
 
-const spin = keyframes`
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+const StatusWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background-color: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
 `;
 
-const Spinner = styled.div`
-    border: 3px solid #f3f3f3;
-    border-top: 3px solid #3182ce;
-    border-radius: 50%;
-    width: 20px;
-    height: 20px;
-    animation: ${spin} 1s linear infinite;
+const StatusIndicator = styled.div<{ $isActive: boolean }>`
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: ${props => props.$isActive ? '#22C55E' : '#ef4444'};
+  box-shadow: 0 0 0 2px ${props => props.$isActive ? '#dcfce7' : '#fee2e2'};
+`;
+
+const StatusText = styled.span<{ $isActive: boolean }>`
+  font-size: 1rem;
+  font-weight: 600;
+  color: ${props => props.$isActive ? '#16a34a' : '#dc2626'};
+`;
+
+const Button = styled.button<{ $isActive: boolean }>`
+  width: 100%;
+  padding: 1rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  background-color: ${props => props.$isActive ? '#ef4444' : '#3b82f6'};
+  color: white;
+
+  &:hover {
+    background-color: ${props => props.$isActive ? '#dc2626' : '#2563eb'};
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    background-color: #9ca3af;
+    cursor: not-allowed;
+    transform: none;
+  }
+`;
+
+const ErrorMessage = styled.div`
+  color: #ef4444;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  background-color: #fef2f2;
+  border-radius: 6px;
+  border: 1px solid #fee2e2;
 `;
 
 const AiTrade = () => {
-    const token = useAuthStore((state) => state.token);
-    const [isRunning, setIsRunning] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
+  const token = useAuthStore((state) => state.token);
+  const navigate = useNavigate();
+  const [isActive, setIsActive] = useState(false);
+  const [error, setError] = useState<string>("");
+  const [isLoading, setIsLoading] = useState(true);
 
-    // AI 거래 상태 확인
+  // AI 거래 상태 확인
+  useEffect(() => {
     const checkAiTradeStatus = async () => {
-        try {
-            const response = await axios.get('https://nexbit.p-e.kr/user/ai/status');
-            setIsRunning(response.data.status);
-            console.log(response);
-        } catch (error) {
-            console.error('AI 거래 상태 확인 중 오류 발생:', error);
-        }
+      if (!token) {
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const response = await axios.get(
+          'https://nexbit.p-e.kr/user/ai/status',
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setIsActive(response.data.status);
+      } catch (error: any) {
+        setError(error.response?.data?.message || "AI 거래 상태 확인 중 오류가 발생했습니다.");
+      } finally {
+        setIsLoading(false);
+      }
     };
 
-    // AI 거래 시작/중지
-    const toggleAiTrade = async () => {
-        setIsLoading(true);
-        try {
-            const endpoint = isRunning ? 'https://nexbit.p-e.kr/user/ai/stop' : 'https://nexbit.p-e.kr/user/ai/start';
-            await axios.post(endpoint);
-            setIsRunning(!isRunning);
-        } catch (error) {
-            console.error('AI 거래 상태 변경 중 오류 발생:', error);
-        } finally {
-            setIsLoading(false);
+    checkAiTradeStatus();
+  }, [token]);
+
+  const handleToggle = async () => {
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const endpoint = isActive ? 'https://nexbit.p-e.kr/user/ai/stop' : 'https://nexbit.p-e.kr/user/ai/start';
+      const response = await axios.post(
+        endpoint,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
-    };
+      );
 
-    // 컴포넌트 마운트 시 상태 확인
-    useEffect(() => {
-        checkAiTradeStatus();
-        // 주기적으로 상태 확인 (30초마다)
-        const interval = setInterval(checkAiTradeStatus, 30000);
-        return () => clearInterval(interval);
-    }, []);
+      if (response.status === 200) {
+        setIsActive(!isActive);
+        setError("");
+      }
+    } catch (error: any) {
+      setError(error.response?.data?.message || "AI 거래 상태 변경 중 오류가 발생했습니다.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    return (
-        <Container>
-            <StatusContainer>
-                {isRunning && <Spinner />}
-                {token && (
-                    <Button
-                        isRunning={isRunning}
-                        onClick={toggleAiTrade}
-                        disabled={isLoading}
-                    >
-                        {isLoading
-                            ? (isRunning ? "중지 중..." : "시작 중...")
-                            : (isRunning ? "AI 거래 중지" : "AI 거래 시작")}
-                    </Button> 
-                )}
-            </StatusContainer>
-        </Container>
-    );
+  return (
+    <AiTradeWrapper>
+      <AiTradeTitle>AI 자동 거래</AiTradeTitle>
+      <AiTradeDescription>
+        AI가 시장 상황을 분석하여 자동으로 매매를 실행합니다.
+        거래 전 반드시 자동 거래의 위험성을 이해하고 이용해주세요.
+      </AiTradeDescription>
+      <StatusWrapper>
+        <StatusIndicator $isActive={isActive} />
+        <StatusText $isActive={isActive}>
+          {isActive ? "AI 거래 활성화" : "AI 거래 비활성화"}
+        </StatusText>
+      </StatusWrapper>
+      {error && <ErrorMessage>{error}</ErrorMessage>}
+      <Button
+        onClick={handleToggle}
+        $isActive={isActive}
+        disabled={!token}
+      >
+        {isActive ? "AI 거래 중지하기" : "AI 거래 시작하기"}
+      </Button>
+    </AiTradeWrapper>
+  );
 };
 
 export default AiTrade;

@@ -1,97 +1,96 @@
 import React, { useState } from "react";
-import styled from "styled-components";
 import axios from "axios";
 import EmailImg from '../../assets/userImg.svg?react';
 import PasswordImg from '../../assets/passwordImg.svg?react';
+import {
+  AuthContainer,
+  AuthTitle,
+  AuthForm,
+  InputGroup,
+  InputIcon,
+  Input,
+  Button,
+  SwitchText,
+  SwitchButton,
+  ErrorMessage
+} from './styles';
 
-const SignUpWrapper = styled.div`
-  box-shadow: 0 0 6px rgba(0, 0, 0, 0.3);
-  width: 30%;
-  height: fit-content;
-  padding: 32px;
-  border-radius: 10px;
-  background: #fff;
-`;
+interface SignUpProps {
+  setButtonState: React.Dispatch<React.SetStateAction<string>>;
+}
 
-const SignUpForm = styled.form`
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-`;
-
-const Input = styled.input`
-  width: 100%;
-  padding: 10px;
-  border: none;
-  font-size: 16px;
-`;
-
-const Button = styled.button`
-  padding: 12px;
-  background: #007bff;
-  color: #fff;
-  border: none;
-  border-radius: 5px;
-  font-size: 16px;
-  cursor: pointer;
-  margin-top: 10px;
-  &:hover {
-    background: #0056b3;
-  }
-`;
-
-const ElementStyle = styled.div`
-  display: flex;
-  align-items: center;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-`;
-
-const SignUp = () => {
+const SignUp = ({ setButtonState }: SignUpProps) => {
   const [form, setForm] = useState({
     email: "",
     password: "",
     passwordCheck: "",
     username: "",
   });
+  const [error, setError] = useState<string>("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+    setError("");
+  };
+
+  const validateForm = () => {
+    if (form.password !== form.passwordCheck) {
+      setError("비밀번호가 일치하지 않습니다.");
+      return false;
+    }
+    if (form.password.length < 6) {
+      setError("비밀번호는 6자 이상이어야 합니다.");
+      return false;
+    }
+    if (!form.email.includes('@')) {
+      setError("유효한 이메일 주소를 입력해주세요.");
+      return false;
+    }
+    if (form.username.length < 2) {
+      setError("이름은 2자 이상이어야 합니다.");
+      return false;
+    }
+    return true;
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // 간단한 유효성 검사 예시
-    if (form.password !== form.passwordCheck) {
-      alert("비밀번호가 일치하지 않습니다.");
+    setError("");
+
+    if (!validateForm()) {
       return;
     }
+
     try {
       await axios.post("https://nexbit.p-e.kr/user/signup", {
         email: form.email,
         password: form.password,
         username: form.username,
       });
-      alert("회원가입 성공!");
-      // 필요시 페이지 이동 등 추가 작업
+      setButtonState("login");
     } catch (err) {
       if (axios.isAxiosError(err)) {
-        alert("회원가입 실패: " + (err.response?.data?.message || err.message));
+        setError(err.response?.data?.message || "회원가입에 실패했습니다.");
       } else if (err instanceof Error) {
-        alert("회원가입 실패: " + err.message);
+        setError(err.message);
       } else {
-        alert("회원가입 실패: 알 수 없는 오류");
+        setError("알 수 없는 오류가 발생했습니다.");
       }
     }
   };
 
+  const handleLoginClick = () => {
+    setButtonState("login");
+  };
+
   return (
-    <SignUpWrapper>
-      <SignUpForm onSubmit={handleSubmit}>
-        <ElementStyle>
-          <EmailImg
-            style={{ width: "30px", height: "auto", marginLeft: "10px" }}
-          />
+    <AuthContainer>
+      <AuthTitle>회원가입</AuthTitle>
+      <AuthForm onSubmit={handleSubmit}>
+        <InputGroup>
+          <InputIcon>
+            <EmailImg style={{ width: "20px", height: "20px" }} />
+          </InputIcon>
           <Input
             type="email"
             id="email"
@@ -101,11 +100,11 @@ const SignUp = () => {
             onChange={handleChange}
             required
           />
-        </ElementStyle>
-        <ElementStyle>
-          <PasswordImg
-            style={{ width: "30px", height: "auto", marginLeft: "10px" }}
-          />
+        </InputGroup>
+        <InputGroup>
+          <InputIcon>
+            <PasswordImg style={{ width: "20px", height: "20px" }} />
+          </InputIcon>
           <Input
             type="password"
             id="password"
@@ -115,11 +114,11 @@ const SignUp = () => {
             onChange={handleChange}
             required
           />
-        </ElementStyle>
-        <ElementStyle>
-          <PasswordImg
-            style={{ width: "30px", height: "auto", marginLeft: "10px" }}
-          />
+        </InputGroup>
+        <InputGroup>
+          <InputIcon>
+            <PasswordImg style={{ width: "20px", height: "20px" }} />
+          </InputIcon>
           <Input
             type="password"
             id="passwordCheck"
@@ -129,11 +128,11 @@ const SignUp = () => {
             onChange={handleChange}
             required
           />
-        </ElementStyle>
-        <ElementStyle>
-          <EmailImg
-            style={{ width: "30px", height: "auto", marginLeft: "10px" }}
-          />
+        </InputGroup>
+        <InputGroup>
+          <InputIcon>
+            <EmailImg style={{ width: "20px", height: "20px" }} />
+          </InputIcon>
           <Input
             type="text"
             id="username"
@@ -143,10 +142,17 @@ const SignUp = () => {
             onChange={handleChange}
             required
           />
-        </ElementStyle>
+        </InputGroup>
+        {error && <ErrorMessage>{error}</ErrorMessage>}
         <Button type="submit">회원가입</Button>
-      </SignUpForm>
-    </SignUpWrapper>
+        <SwitchText>
+          이미 계정이 있으신가요?
+          <SwitchButton type="button" onClick={handleLoginClick}>
+            로그인
+          </SwitchButton>
+        </SwitchText>
+      </AuthForm>
+    </AuthContainer>
   );
 };
 

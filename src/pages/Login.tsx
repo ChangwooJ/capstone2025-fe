@@ -17,8 +17,8 @@ const User = () => {
 
   return (
     <UserTemplate>
-      {buttonState == "signup" && <SignUp />}
-      {buttonState == "login" && <Login setButtonState={setButtonState} />}
+      {buttonState === "signup" && <SignUp setButtonState={setButtonState} />}
+      {buttonState === "login" && <Login setButtonState={setButtonState} />}
     </UserTemplate>
   );
 };

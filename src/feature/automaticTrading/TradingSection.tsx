@@ -1,213 +1,318 @@
-import { useEffect, useState } from "react";
 import styled from "styled-components";
+import { useState, useEffect } from "react";
+import { useAuthStore } from "../../store/useAuthStore";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
-const TradingSectionContainer = styled.div`
+const TradingSectionWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 100%;
   background-color: white;
-  border-radius: 10px;
-  box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
-  margin-top: 1%;
-  width: 100%;
-  height: 30%;
-  padding: 2%;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 2rem;
 `;
 
-const TradingSectionHeader = styled.div`
-  display: flex;
-  width: 30%;
-  height: 10%;
+const TradingTitle = styled.h2`
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 1.5rem;
+  letter-spacing: -0.5px;
 `;
 
-const TradingStyle = styled.div<{isActive: boolean}>`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 50%;
-  height: fit-content;
-  padding: 8px 16px;
-  font-weight: ${({ isActive }) => (isActive ? "bold" : "normal")};
-  color: ${({ isActive }) => (isActive ? "white" : "gray")};
-  box-shadow: 0 0 6px ${({ isActive }) => (isActive ? "#6fe4d1" : "none")};
-  border-top-right-radius: 10px;
-  border-top-left-radius: 10px;
-  background-color: ${({ isActive }) => (isActive ? "#6fe4d1" : "rgb(245, 245, 245)")};
-  cursor: pointer;
-`;
-
-const TradingSectionBody = styled.div`
+const TradingForm = styled.form`
   display: flex;
   flex-direction: column;
-  width: 100%;
-  height: fit-content;
-  padding: 3%;
-  border-radius: 10px;
-  border-top-left-radius: 0;
-  border: 1px solid #6fe4d1;
+  gap: 1.5rem;
 `;
 
-const InputContainer = styled.div`
-  display: flex;
-  width: 100%;
-  height: fit-content;
-  gap: 3%;
-`;
-
-const InputWrapper = styled.div`
-  font-size: 0.9rem;
-  color: gray;
-  gap: 5px;
+const InputGroup = styled.div`
   display: flex;
   flex-direction: column;
-  width: 30%;
+  gap: 0.5rem;
 `;
 
-const TradingInputWrapper = styled.div`
+const Label = styled.label`
+  font-size: 1rem;
+  font-weight: 600;
+  color: #4b5563;
+`;
+
+const Input = styled.input`
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 1rem;
+  color: #1f2937;
+  transition: all 0.2s ease-in-out;
+
+  &:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+
+  &::placeholder {
+    color: #9ca3af;
+  }
+`;
+
+const ButtonGroup = styled.div`
   display: flex;
-  justify-content: right;
-  width: 100%;
+  gap: 1rem;
+  margin-top: 1rem;
 `;
 
-const ValueButton = styled.button`
-  height: 100%;
-  aspect-ratio: 1 / 1;
-  font-size: 1.3rem;
-  color: gray;
-  cursor: pointer;
-`;
-
-const TradingInput = styled.input`
-  text-align: right;
-  width: 100%;
-  height: fit-content;
-  font-size: 0.9rem;
-  padding: 3% 5%;
-  border: 1px solid rgb(189, 189, 189);
-`;
-
-const TradingSectionFooter = styled.div`
-  display: flex;
-  justify-content: right;
-  padding: 2% 4% 0 0;
-  width: 100%;
-  height: fit-content;
-`;
-
-const Trading = styled.button`
-  background-color: #6fe4d1;
-  padding: 7px 10%;
-  border-radius: 5px;
+const Button = styled.button<{ $variant?: 'buy' | 'sell' }>`
+  flex: 1;
+  padding: 1rem;
   border: none;
-  color: white;
-  font-size: 1.1rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
   cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  background-color: ${props => props.$variant === 'buy' ? '#22C55E' : '#ef4444'};
+  color: white;
+
+  &:hover {
+    background-color: ${props => props.$variant === 'buy' ? '#16a34a' : '#dc2626'};
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    background-color: #9ca3af;
+    cursor: not-allowed;
+    transform: none;
+  }
+`;
+
+const ErrorMessage = styled.div`
+  color: #ef4444;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  background-color: #fef2f2;
+  border-radius: 6px;
+  border: 1px solid #fee2e2;
+`;
+
+const PriceInfo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  color: #6b7280;
+  font-size: 0.875rem;
+`;
+
+const CurrentPrice = styled.span`
+  color: #3b82f6;
+  font-weight: 600;
 `;
 
 const TradingSection = () => {
-  const [activeStyle, setActiveStyle] = useState("일반 매매");
-  const [price, setPrice] = useState(0);
-  const [count, setCount] = useState(0);
+  const token = useAuthStore((state) => state.token);
+  const navigate = useNavigate();
+  const [currentPrice, setCurrentPrice] = useState<number>(0);
+  const [price, setPrice] = useState<string>("");
+  const [amount, setAmount] = useState<string>("");
+  const [error, setError] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
+  // 현재 BTC 가격 가져오기
   useEffect(() => {
-    const fetchData = async () => {
-      const res = await fetch("https://nexbit.p-e.kr/api/exchangePrice");
-      const data = await res.json();
+    const fetchCurrentPrice = async () => {
+      try {
+        console.log('가격 정보 요청 시작...');
+        const response = await axios.get(
+          'https://nexbit.p-e.kr/api/exchangePrice?interval=minutes/10&count=1'
+        );
+        
+        // 응답 데이터 구조 확인 및 안전한 처리
+        if (!response.data || !Array.isArray(response.data) || response.data.length === 0) {
+          console.error('API 응답이 올바르지 않습니다:', response.data);
+          setError('가격 정보를 받아올 수 없습니다.');
+          return;
+        }
 
-      if (data.length > 0) {
-        setPrice(data[data.length - 1].close);
+        const latestData = response.data[0];
+        console.log('최신 가격 데이터:', latestData);
+
+        // close 필드에서 현재 가격 가져오기
+        const price = latestData.close;
+        
+        if (typeof price === 'number' && !isNaN(price) && price > 0) {
+          console.log('현재 가격 설정:', price);
+          setCurrentPrice(price);
+          setPrice(price.toString());
+          setError('');
+        } else {
+          console.error('가격 데이터가 올바르지 않습니다:', {
+            price,
+            type: typeof price,
+            latestData
+          });
+          setError('가격 정보를 불러올 수 없습니다.');
+        }
+      } catch (error) {
+        console.error('현재 가격을 가져오는데 실패했습니다:', error);
+        if (axios.isAxiosError(error)) {
+          console.error('Axios 에러 상세:', {
+            status: error.response?.status,
+            statusText: error.response?.statusText,
+            data: error.response?.data,
+            message: error.message,
+            url: error.config?.url
+          });
+          if (error.response?.status === 404) {
+            setError('가격 정보 API를 찾을 수 없습니다. 잠시 후 다시 시도해주세요.');
+          } else if (error.response?.status === 401) {
+            setError('인증이 필요합니다. 로그인해주세요.');
+          } else {
+            setError(`가격 정보 조회 실패: ${error.response?.data?.message || error.message}`);
+          }
+        } else {
+          setError('현재 가격을 가져오는데 실패했습니다.');
+        }
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    fetchData();
+    fetchCurrentPrice();
+    const interval = setInterval(fetchCurrentPrice, 10000);
+
+    return () => clearInterval(interval);
   }, []);
 
-  const handleOrder = async () => {
-    if (price <= 0 || count <= 0) {
-      alert("가격과 수량을 올바르게 입력하세요.");
+  const calculateQuantity = (price: number, amount: number): number => {
+    return amount / price;
+  };
+
+  const handleSubmit = async (e: React.FormEvent, type: "buy" | "sell") => {
+    e.preventDefault();
+    setError("");
+
+    if (!token) {
+      navigate("/login");
       return;
     }
 
+    if (!price || !amount) {
+      setError("가격과 거래 금액을 모두 입력해주세요.");
+      return;
+    }
+
+    const numPrice = parseFloat(price);
+    const numAmount = parseFloat(amount);
+
+    if (isNaN(numPrice) || isNaN(numAmount) || numPrice <= 0 || numAmount <= 0) {
+      setError("유효한 가격과 거래 금액을 입력해주세요.");
+      return;
+    }
+
+    if (numAmount < 5000) {
+      setError("최소 거래 금액은 5,000원입니다.");
+      return;
+    }
+
+    const quantity = calculateQuantity(numPrice, numAmount);
+
     try {
-      const res = await fetch("https://nexbit.p-e.kr/api/order", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
+      const response = await axios.post(
+        'https://nexbit.p-e.kr/api/order',
+        {
+          market: "KRW-BTC",
+          side: type === "buy" ? "bid" : "ask",
+          price: numPrice.toFixed(0),
+          volume: quantity.toFixed(8),
+          ord_type: "limit"
         },
-        body: JSON.stringify({
-          market: "KRW-BTC",      // 실제 마켓을 사용하세요
-          side: "bid",
-          price: price.toFixed(0),
-          volume: count.toFixed(8),
-          ord_type: "limit"       // 지정가 주문
-        })
-      });
-  
-      const data = await res.json();
-  
-      if (res.ok) {
-        alert("주문이 정상적으로 접수되었습니다.\n주문번호: " + data.uuid);
-      } else {
-        alert("주문 실패: " + (data.error || "알 수 없는 오류"));
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        alert(`${type === "buy" ? "매수" : "매도"} 주문이 성공적으로 실행되었습니다.`);
+        setAmount("");
       }
-    } catch (error) {
-      alert("주문 요청 중 오류가 발생했습니다.");
-      console.error(error);
+    } catch (error: any) {
+      setError(error.response?.data?.message || "거래 실행 중 오류가 발생했습니다.");
     }
   };
 
+  if (isLoading) {
+    return (
+      <TradingSectionWrapper>
+        <TradingTitle>거래하기</TradingTitle>
+        <div>현재 가격을 불러오는 중...</div>
+      </TradingSectionWrapper>
+    );
+  }
+
   return (
-    <TradingSectionContainer>
-      <TradingSectionHeader>
-        <TradingStyle
-          isActive={activeStyle === "Ai 자동 매매"}
-          onClick={() => setActiveStyle("Ai 자동 매매")}
-        >
-          Ai 자동 매매
-        </TradingStyle>
-        <TradingStyle
-          isActive={activeStyle === "일반 매매"}
-          onClick={() => setActiveStyle("일반 매매")}
-        >
-          일반 매매
-        </TradingStyle>
-      </TradingSectionHeader>
-      <TradingSectionBody>
-        <InputContainer>
-          <InputWrapper>
-            매수 가격 (USD)
-            <TradingInputWrapper>
-              <TradingInput
-                value={price}
-                onChange={(e) => setPrice(Number(e.target.value))}
-                type="number"
-                min="0"
-              />
-              <ValueButton onClick={() => setPrice(price + 1000)}>
-                +
-              </ValueButton>
-              <ValueButton onClick={() => setPrice(price - 1000)}>
-                -
-              </ValueButton>
-            </TradingInputWrapper>
-          </InputWrapper>
-          <InputWrapper>
-            주문 수량 (BTC)
-            <TradingInput
-              value={count}
-              onChange={(e) => setCount(Number(e.target.value))}
-              type="number"
-              min="0"
-            />
-          </InputWrapper>
-          <InputWrapper>
-            주문 총액 (USD)
-            <TradingInput value={price * count} />
-          </InputWrapper>
-        </InputContainer>
-        <TradingSectionFooter>
-          <Trading onClick={handleOrder}>매수</Trading>
-        </TradingSectionFooter>
-      </TradingSectionBody>
-    </TradingSectionContainer>
+    <TradingSectionWrapper>
+      <TradingTitle>거래하기</TradingTitle>
+      <TradingForm>
+        <InputGroup>
+          <Label htmlFor="price">거래 가격 (KRW)</Label>
+          <PriceInfo>
+            현재 가격: <CurrentPrice>{currentPrice.toLocaleString()} KRW</CurrentPrice>
+          </PriceInfo>
+          <Input
+            id="price"
+            type="number"
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+            placeholder="거래 가격을 입력하세요"
+          />
+        </InputGroup>
+        <InputGroup>
+          <Label htmlFor="amount">거래 금액 (KRW)</Label>
+          <Input
+            id="amount"
+            type="number"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            placeholder="거래할 금액을 입력하세요 (최소 5,000원)"
+            min="5000"
+          />
+        </InputGroup>
+        {error && <ErrorMessage>{error}</ErrorMessage>}
+        <ButtonGroup>
+          <Button
+            type="submit"
+            $variant="buy"
+            onClick={(e) => handleSubmit(e, "buy")}
+            disabled={!token}
+          >
+            매수하기
+          </Button>
+          <Button
+            type="submit"
+            $variant="sell"
+            onClick={(e) => handleSubmit(e, "sell")}
+            disabled={!token}
+          >
+            매도하기
+          </Button>
+        </ButtonGroup>
+      </TradingForm>
+    </TradingSectionWrapper>
   );
 };
 
+export { TradingSection };
 export default TradingSection;
