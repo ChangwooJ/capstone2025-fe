@@ -37,7 +37,7 @@ const Investment = () => {
     {
       id: InvestmentTab.PROFIT,
       label: '투자손익',
-      component: <ProfitTab token={token} totalProfit={totalProfit} profitRate={profitRate} />
+      component: <ProfitTab token={token} />
     },
     {
       id: InvestmentTab.HISTORY,

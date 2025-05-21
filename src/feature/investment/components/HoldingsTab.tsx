@@ -292,6 +292,7 @@ const HoldingsTab = ({ token, onMetricsUpdate }: HoldingsTabProps) => {
     }
     try {
       const response = await axios.get<AssetResponse>('https://nexbit.p-e.kr/user/myasset');
+      console.log(response);
       setAssets(response.data.assets);
       setBtcCurrentPrice(response.data.btc_current_price);
     } catch (error: any) {
@@ -340,7 +341,6 @@ const HoldingsTab = ({ token, onMetricsUpdate }: HoldingsTabProps) => {
 
   const { totalAssets, totalInvestment, totalProfit, profitRate } = calculateInvestmentMetrics();
 
-  // 파이차트 데이터 계산
   let krwBalance = 0;
   let btcBalance = 0;
   if (assets) {
@@ -351,7 +351,7 @@ const HoldingsTab = ({ token, onMetricsUpdate }: HoldingsTabProps) => {
   }
   const btcValue = btcBalance * btcCurrentPrice;
 
-  const totalValue = krwBalance + btcValue; // 파이차트 계산을 위한 전체 평가금액 (KRW + BTC)
+  const totalValue = krwBalance + btcValue;
 
   const btcPercent = totalValue > 0 ? (btcValue / totalValue) * 100 : 0;
   const krwPercent = totalValue > 0 ? (krwBalance / totalValue) * 100 : 0;
@@ -361,7 +361,6 @@ const HoldingsTab = ({ token, onMetricsUpdate }: HoldingsTabProps) => {
     { name: "KRW", value: krwBalance, percent: krwPercent.toFixed(1) }
   ];
 
-  // 커스텀 라벨 렌더러
   const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, index }: CustomizedLabelProps) => {
     const RADIAN = Math.PI / 180;
     const radius = innerRadius + (outerRadius - innerRadius) * 0.7;
@@ -375,7 +374,6 @@ const HoldingsTab = ({ token, onMetricsUpdate }: HoldingsTabProps) => {
     );
   };
 
-  // 커스텀 툴팁 포맷터
   const tooltipFormatter = (value: number, name: string) => {
     const item = pieData.find(d => d.name === name);
     return [
