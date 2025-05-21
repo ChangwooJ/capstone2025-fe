@@ -35,37 +35,84 @@ const ErrorMessage = styled(Loading)`
   border: 1px solid #ffcdd2;
 `;
 
+const IntervalSelector = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+  align-items: center;
+`;
+
+const IntervalButton = styled.button<{ $active?: boolean }>`
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  background-color: ${props => (props.$active ? '#007bff' : '#fff')};
+  color: ${props => (props.$active ? '#fff' : '#333')};
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+
+  &:hover {
+    border-color: #007bff;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
 const PriceInquiry = () => {
   const [priceData, setPriceData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
+  const [selectedInterval, setSelectedInterval] = useState('1시간');
+
+  const intervalOptions: { label: string; value: string; defaultCount: number }[] = [
+    { label: '1분', value: 'minutes/1', defaultCount: 6 * 24 * 1 },
+    { label: '10분', value: 'minutes/10', defaultCount: 6 * 24 * 1 },
+    { label: '30분', value: 'minutes/30', defaultCount: 6 * 24 * 1 },
+    { label: '1시간', value: 'minutes/60', defaultCount: 6 * 24 * 1 },
+    { label: '4시간', value: 'minutes/240', defaultCount: 6 * 6 },
+    { label: '일', value: 'days', defaultCount: 30 },
+    { label: '주', value: 'weeks', defaultCount: 30 },
+    { label: '월', value: 'months', defaultCount: 30 },
+  ];
+
+  const currentCount = intervalOptions.find(opt => opt.label === selectedInterval)?.defaultCount || 200;
+  const currentIntervalValue = intervalOptions.find(opt => opt.label === selectedInterval)?.value || 'minutes/60';
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const res = await fetch('https://nexbit.p-e.kr/api/exchangePrice?interval=minutes/10&count=200');
-        
+        setError("");
+
+        const res = await fetch(`https://nexbit.p-e.kr/api/exchangePrice?interval=${currentIntervalValue}&count=${currentCount}&market=KRW-BTC`);
+
         if (!res.ok) {
-          throw new Error('API 요청 실패');
+          const errorText = await res.text();
+          throw new Error(`API 요청 실패: ${res.status} ${res.statusText} - ${errorText}`);
         }
-        
+
         const data = await res.json();
-        // 날짜 기준으로 오름차순 정렬 (최신 데이터가 마지막에 오도록)
         setPriceData(data.reverse());
-      } catch (err) {
+      } catch (err: any) {
         console.error('데이터 가져오기 오류:', err);
-        setError('비트코인 시세 데이터를 불러오는데 실패했습니다.');
+        setError(`비트코인 시세 데이터를 불러오는데 실패했습니다: ${err.message}`);
+        setPriceData([]);
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-    
-    const interval = setInterval(fetchData, 60000);
-    return () => clearInterval(interval);
-  }, []);
+
+    const intervalId = setInterval(fetchData, 60000);
+
+    return () => clearInterval(intervalId);
+  }, [selectedInterval, currentCount, currentIntervalValue]);
 
   return (
     <PriceInfoWrapper>
@@ -75,8 +122,27 @@ const PriceInquiry = () => {
         <ErrorMessage>{error}</ErrorMessage>
       ) : (
         <>
-          <PriceTitle priceData={priceData} />
-          {priceData.length > 0 && <PriceChart priceData={priceData} />}
+          {priceData && priceData.length > 0 ? (
+            <>
+              <PriceTitle priceData={priceData} />
+              <IntervalSelector>
+                <label style={{ marginRight: '8px', fontWeight: '600' }}></label>
+                {intervalOptions.map(option => (
+                  <IntervalButton
+                    key={option.label}
+                    $active={selectedInterval === option.label}
+                    onClick={() => setSelectedInterval(option.label)}
+                    disabled={loading}
+                  >
+                    {option.label}
+                  </IntervalButton>
+                ))}
+              </IntervalSelector>
+              <PriceChart priceData={priceData} />
+            </>
+          ) : (
+             <Loading>데이터가 없습니다.</Loading>
+          )}
         </>
       )}
     </PriceInfoWrapper>
