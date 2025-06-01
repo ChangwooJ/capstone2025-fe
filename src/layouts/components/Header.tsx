@@ -29,29 +29,11 @@ const NavigationSection = styled.div`
   width: 75%;
 `;
 
-const LoginButton = styled.button`
-  border: 1px solid #939496;
-  border-radius: 5px;
-  padding: 5px 10px;
-  background-color: #f6f6f6;
-  cursor: pointer;
-`;
-
-const LoginSection = styled.div`
-  width: 15%;
-  display: flex;
-  justify-content: center;
-`;
-
 const Header = () => {
   const navigate = useNavigate();
 
   function handleHomeClick() {
     navigate("/");
-  }
-
-  function handleLoginClick() {
-    navigate("/login");
   }
 
   return (
@@ -71,9 +53,6 @@ const Header = () => {
           </Link>
         </LogoSection>
         <NavigationSection></NavigationSection>
-        <LoginSection>
-          <LoginButton onClick={handleLoginClick}>로그인</LoginButton>
-        </LoginSection>
       </HeaderContain>
     </HeaderContainer>
   );
