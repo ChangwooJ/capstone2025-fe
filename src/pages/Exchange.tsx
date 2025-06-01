@@ -42,7 +42,7 @@ const Exchange = () => {
       </ExchangeInfo>
       <MyInfo>
         <MyWallet />
-        <AiTrade token={token} />
+        {token && <AiTrade token={token} />}
       </MyInfo>
     </ExchangeWrapper>
   );
