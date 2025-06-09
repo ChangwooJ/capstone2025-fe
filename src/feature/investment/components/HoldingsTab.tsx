@@ -37,13 +37,6 @@ const TableContainer = styled.div`
   min-height: 400px;
 `;
 
-const SummaryGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-`;
-
 const StyledSummaryCard = styled(SummaryCard)`
   background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
   border: 1px solid rgba(0, 0, 0, 0.05);
@@ -98,7 +91,7 @@ const ChartWrapper = styled(ChartContainer)`
 
 const ChartContent = styled.div`
   display: grid;
-  grid-template-columns: 1fr 300px;
+  grid-template-columns: 300px 1fr 300px;
   gap: 2rem;
   min-height: 400px;
 
@@ -111,9 +104,25 @@ const ChartSection = styled.div`
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  grid-column: 2;
+`;
+
+const InfoSection = styled.div`
+  grid-column: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+`;
+
+const SummarySection = styled.div`
+  grid-column: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 `;
 
 const ChartInfo = styled.div`
+  width: fit-content;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 1rem;
@@ -126,6 +135,7 @@ const ChartInfo = styled.div`
 const InfoItem = styled.div`
   display: flex;
   flex-direction: column;
+  min-width: 200px;
   gap: 0.25rem;
   padding: 0.75rem;
   background: white;
@@ -147,84 +157,6 @@ const InfoItem = styled.div`
   }
 `;
 
-const LegendContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  padding: 1.5rem;
-  background: #f8fafc;
-  border-radius: 12px;
-  height: fit-content;
-`;
-
-const LegendItem = styled.div`
-  display: flex;
-  align-items: center;
-  padding: 1rem;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  transition: all 0.2s ease;
-
-  &:hover {
-    transform: translateX(4px);
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  }
-`;
-
-const LegendText = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  flex: 1;
-
-  .asset-name {
-    font-weight: 600;
-    color: #1e293b;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  .asset-value {
-    font-size: 0.875rem;
-    color: #64748b;
-  }
-
-  .asset-percent {
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: #3b82f6;
-    background: #eff6ff;
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
-    width: fit-content;
-  }
-`;
-
-const AssetIcon = styled.div<{ $color: string }>`
-  width: 24px;
-  height: 24px;
-  border-radius: 6px;
-  background: ${props => props.$color};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-weight: 600;
-  font-size: 0.75rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-`;
-
-const ColorBox = styled.div<{ color: string }>`
-  width: 16px;
-  height: 16px;
-  background-color: ${props => props.color};
-  margin-right: 12px;
-  border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-`;
-
 const StyledAssetTable = styled(AssetTable)`
   background: white;
   border-radius: 16px;
@@ -239,7 +171,7 @@ const StyledAssetTable = styled(AssetTable)`
       font-weight: 600;
       color: #64748b;
       text-transform: uppercase;
-      font-size: 0.75rem;
+      font-size: 0.9rem;
       letter-spacing: 0.5px;
       border-bottom: 2px solid #e2e8f0;
     }
@@ -313,10 +245,74 @@ interface HoldingsTabProps {
   token: string | null;
 }
 
+const PredictionCard = styled.div`
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+  border: 1px solid #e2e8f0;
+`;
+
+const PredictionHeader = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+`;
+
+const PredictionIcon = styled.div`
+  font-size: 1.5rem;
+`;
+
+const PredictionTitle = styled.h4`
+  color: #1e293b;
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 0;
+`;
+
+const PredictionContent = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+`;
+
+const PredictionItem = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 8px;
+`;
+
+const PredictionLabel = styled.span`
+  font-size: 0.875rem;
+  color: #64748b;
+  font-weight: 500;
+`;
+
+const PredictionValue = styled.span<{ $isPositive?: boolean }>`
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: ${props => props.$isPositive === undefined ? '#1e293b' : props.$isPositive ? '#10b981' : '#ef4444'};
+`;
+
+interface PredictionResponse {
+  success: boolean;
+  predicted_price: number;
+}
+
 const HoldingsTab = ({ token }: HoldingsTabProps) => {
   const [assets, setAssets] = useState<UpbitAsset[] | null>([]);
   const [btcCurrentPrice, setBtcCurrentPrice] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [timeUntilNextCandle, setTimeUntilNextCandle] = useState('');
+  const [predictionData, setPredictionData] = useState({
+    predictedPrice: 0,
+    expectedReturn: 0
+  });
 
   const fetchAssets = async () => {
     if (!token) {
@@ -420,15 +416,68 @@ const HoldingsTab = ({ token }: HoldingsTabProps) => {
     ];
   };
 
-  const getAssetIcon = (currency: string) => {
-    switch (currency) {
-      case 'BTC':
-        return '₿';
-      case 'KRW':
-        return '₩';
-      default:
-        return currency.charAt(0);
+  // 다음 봉까지 남은 시간 계산 함수
+  const calculateTimeUntilNextCandle = () => {
+    const now = new Date();
+    const nextCandle = new Date(now);
+    nextCandle.setHours(Math.ceil(now.getHours() / 4) * 4, 0, 0, 0);
+    if (nextCandle <= now) {
+      nextCandle.setHours(nextCandle.getHours() + 4);
     }
+    const diff = nextCandle.getTime() - now.getTime();
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+    return `${hours}시간 ${minutes}분 ${seconds}초`;
+  };
+
+  // 1초마다 남은 시간 업데이트
+  useEffect(() => {
+    const updateTime = () => {
+      setTimeUntilNextCandle(calculateTimeUntilNextCandle());
+    };
+    
+    updateTime(); // 초기 업데이트
+    const interval = setInterval(updateTime, 1000);
+    
+    return () => clearInterval(interval);
+  }, []);
+
+  const fetchPredictedPrice = async () => {
+    try {
+      const response = await axios.get<PredictionResponse>('https://nexbit.p-e.kr/api/predict_price');
+      if (response.data.success) {
+        const predictedPrice = response.data.predicted_price;
+        const expectedReturn = ((predictedPrice - btcCurrentPrice) / btcCurrentPrice) * 100;
+        
+        setPredictionData({
+          predictedPrice,
+          expectedReturn: Number(expectedReturn.toFixed(2))
+        });
+      }
+    } catch (error) {
+      console.error('예측 가격을 가져오는데 실패했습니다:', error);
+    }
+  };
+
+  useEffect(() => {
+    const updatePrediction = () => {
+      fetchPredictedPrice();
+      const timeUntilNext = getTimeUntilNextPrediction();
+      setTimeout(updatePrediction, timeUntilNext);
+    };
+
+    updatePrediction();
+  }, [btcCurrentPrice]);
+
+  const getTimeUntilNextPrediction = () => {
+    const now = new Date();
+    const nextPrediction = new Date(now);
+    nextPrediction.setHours(Math.ceil(now.getHours() / 4) * 4, 0, 0, 0);
+    if (nextPrediction <= now) {
+      nextPrediction.setHours(nextPrediction.getHours() + 4);
+    }
+    return nextPrediction.getTime() - now.getTime();
   };
 
   return (
@@ -438,38 +487,30 @@ const HoldingsTab = ({ token }: HoldingsTabProps) => {
           <Spinner />
         </LoadingOverlay>
       )}
-      <SummaryGrid>
-        <StyledSummaryCard>
-          <h3>총 보유자산</h3>
-          <div>{totalAssets.toLocaleString()} KRW</div>
-        </StyledSummaryCard>
-        <StyledSummaryCard>
-          <h3>총 매수금액</h3>
-          <div>{totalInvestment.toLocaleString()} KRW</div>
-        </StyledSummaryCard>
-        <StyledSummaryCard>
-          <h3>총 평가손익</h3>
-          <div style={{ 
-            color: totalProfit >= 0 ? '#10b981' : '#ef4444',
-            display: 'flex',
-            alignItems: 'baseline',
-            gap: '0.5rem'
-          }}>
-            {totalProfit.toLocaleString()} KRW
-            <span style={{ 
-              fontSize: '0.875rem',
-              color: totalProfit >= 0 ? '#059669' : '#dc2626',
-              fontWeight: '500'
-            }}>
-              ({profitRate}%)
-            </span>
-          </div>
-        </StyledSummaryCard>
-      </SummaryGrid>
-
       <ChartWrapper>
         <h3>자산 비중</h3>
         <ChartContent>
+          <InfoSection>
+            <ChartInfo>
+              <InfoItem>
+                <span>총 자산 가치</span>
+                <span>{totalAssets.toLocaleString()} KRW</span>
+              </InfoItem>
+              <InfoItem>
+                <span>BTC 보유량</span>
+                <span>{assets?.find(a => a.currency === 'BTC')?.balance || '0'} BTC</span>
+              </InfoItem>
+              <InfoItem>
+                <span>현재 BTC 가격</span>
+                <span>{btcCurrentPrice.toLocaleString()} KRW</span>
+              </InfoItem>
+              <InfoItem>
+                <span>KRW 보유액</span>
+                <span>{Math.floor(parseFloat(assets?.find(a => a.currency === 'KRW')?.balance || '0'))} KRW</span>
+              </InfoItem>
+            </ChartInfo>
+          </InfoSection>
+
           <ChartSection>
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
@@ -500,47 +541,63 @@ const HoldingsTab = ({ token }: HoldingsTabProps) => {
               </PieChart>
             </ResponsiveContainer>
 
-            <ChartInfo>
-              <InfoItem>
-                <span>총 자산 가치</span>
-                <span>{totalAssets.toLocaleString()} KRW</span>
-              </InfoItem>
-              <InfoItem>
-                <span>BTC 보유량</span>
-                <span>{assets?.find(a => a.currency === 'BTC')?.balance || '0'} BTC</span>
-              </InfoItem>
-              <InfoItem>
-                <span>현재 BTC 가격</span>
-                <span>{btcCurrentPrice.toLocaleString()} KRW</span>
-              </InfoItem>
-              <InfoItem>
-                <span>KRW 보유액</span>
-                <span>{assets?.find(a => a.currency === 'KRW')?.balance || '0'} KRW</span>
-              </InfoItem>
-            </ChartInfo>
+            <PredictionCard>
+              <PredictionHeader>
+                <PredictionIcon>📈</PredictionIcon>
+                <PredictionTitle>다음 4시간 봉 예측</PredictionTitle>
+              </PredictionHeader>
+              <PredictionContent>
+                <PredictionItem>
+                  <PredictionLabel>다음 봉까지 남은 시간</PredictionLabel>
+                  <PredictionValue style={{ color: "black" }}>
+                    {timeUntilNextCandle}
+                  </PredictionValue>
+                </PredictionItem>
+                <PredictionItem>
+                  <PredictionLabel>예측 가격</PredictionLabel>
+                  <PredictionValue $isPositive={predictionData.predictedPrice > btcCurrentPrice}>
+                    {predictionData.predictedPrice.toLocaleString()} KRW
+                    <span style={{ 
+                      marginLeft: '0.5rem', 
+                      fontSize: '0.875rem',
+                      color: predictionData.expectedReturn > 0 ? '#10b981' : '#ef4444'
+                    }}>
+                      ({predictionData.expectedReturn > 0 ? '+' : ''}{predictionData.expectedReturn}%)
+                    </span>
+                  </PredictionValue>
+                </PredictionItem>
+              </PredictionContent>
+            </PredictionCard>
           </ChartSection>
 
-          <LegendContainer>
-            {pieData.map(({ name, value, percent }: { name: string; value: number; percent: string }, index: number) => (
-              <LegendItem key={`legend-${index}`}>
-                <ColorBox color={COLORS[index % COLORS.length]} />
-                <LegendText>
-                  <div className="asset-name">
-                    <AssetIcon $color={COLORS[index % COLORS.length]}>
-                      {getAssetIcon(name)}
-                    </AssetIcon>
-                    {name}
-                  </div>
-                  <div className="asset-value">
-                    {value.toLocaleString()} KRW
-                  </div>
-                  <div className="asset-percent">
-                    {percent}%
-                  </div>
-                </LegendText>
-              </LegendItem>
-            ))}
-          </LegendContainer>
+          <SummarySection>
+            <StyledSummaryCard>
+              <h3>총 보유자산</h3>
+              <div>{totalAssets.toLocaleString()} KRW</div>
+            </StyledSummaryCard>
+            <StyledSummaryCard>
+              <h3>총 매수금액</h3>
+              <div>{totalInvestment.toLocaleString()} KRW</div>
+            </StyledSummaryCard>
+            <StyledSummaryCard>
+              <h3>총 평가손익</h3>
+              <div style={{ 
+                color: totalProfit >= 0 ? '#10b981' : '#ef4444',
+                display: 'flex',
+                alignItems: 'baseline',
+                gap: '0.5rem'
+              }}>
+                {totalProfit.toLocaleString()} KRW
+                <span style={{ 
+                  fontSize: '0.875rem',
+                  color: totalProfit >= 0 ? '#059669' : '#dc2626',
+                  fontWeight: '500'
+                }}>
+                  ({profitRate}%)
+                </span>
+              </div>
+            </StyledSummaryCard>
+          </SummarySection>
         </ChartContent>
       </ChartWrapper>
 
@@ -571,15 +628,15 @@ const HoldingsTab = ({ token }: HoldingsTabProps) => {
               return (
                 <tr key={asset.currency}>
                   <td style={{ fontWeight: '600' }}>{asset.currency}</td>
-                  <td>{parseFloat(asset.balance).toFixed(8)}</td>
-                  <td>{avgBuyPrice.toLocaleString()} KRW</td>
+                  <td>{parseFloat(asset.balance).toFixed(8)} BTC</td>
+                  <td>{Math.floor(avgBuyPrice).toLocaleString()} KRW</td>
                   <td>{btcCurrentPrice.toLocaleString()} KRW</td>
-                  <td>{currentValue.toLocaleString()} KRW</td>
+                  <td>{Math.floor(currentValue).toLocaleString()} KRW</td>
                   <td style={{ 
-                    color: profit >= 0 ? '#10b981' : '#ef4444',
+                    color: Math.floor(profit) >= 0 ? '#10b981' : '#ef4444',
                     fontWeight: '600'
                   }}>
-                    {profit.toLocaleString()} KRW
+                    {Math.floor(profit).toLocaleString()} KRW
                   </td>
                   <td style={{ 
                     color: profitRate >= 0 ? '#10b981' : '#ef4444',
