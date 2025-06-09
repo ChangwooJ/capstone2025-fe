@@ -190,6 +190,12 @@ const MyWallet  = () => {
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
 
   const fetchInfo = async () => {
+    if (!token) {
+      setUserInfo(null);
+      setAssets(null);
+      return;
+    }
+
     try {
       const response = await axios.get('https://nexbit.p-e.kr/user/info', {
         headers: {
@@ -199,13 +205,13 @@ const MyWallet  = () => {
       setUserInfo(response.data.user);
     } catch (error) {
       console.error("유저 정보 불러오기 실패:", error);
+      setUserInfo(null);
+      setAssets(null);
     }
   };
 
   useEffect(() => {
-    if (token) {
-      fetchInfo();
-    }
+    fetchInfo();
   }, [token]);
 
   const fetchAssets = async () => {
@@ -225,6 +231,8 @@ const MyWallet  = () => {
 
   const handleLogout = () => {
     clearToken();
+    setUserInfo(null);
+    setAssets(null);
   }
 
   return (
