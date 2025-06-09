@@ -644,7 +644,7 @@ const TradingSection = () => {
       <PredictionCard>
         <PredictionHeader>
           <PredictionIcon>🤖</PredictionIcon>
-          <PredictionTitle>AI 매수 예측</PredictionTitle>
+          <PredictionTitle>AI 예측 리포트</PredictionTitle>
         </PredictionHeader>
         <PredictionContent>
           <PredictionItem>
@@ -667,7 +667,16 @@ const TradingSection = () => {
           </PredictionItem>
           <PredictionItem>
             <PredictionLabel>예측 가격</PredictionLabel>
-            <PredictionValue $isPositive={predictionData.predictedPrice > currentPrice}>
+            <PredictionValue $isPositive={predictionData.predictedPrice > currentPrice} style={{ display: 'flex', alignItems: 'center' }}>
+              <span style={{ 
+                fontSize: '0.7rem', 
+                marginRight: '0.5rem',
+                display: 'flex',
+                alignItems: 'center'
+              }}>
+                {predictionData.predictedPrice > currentPrice ? '▲' : 
+                 predictionData.predictedPrice < currentPrice ? '▼' : '–'}
+              </span>
               {predictionData.predictedPrice.toLocaleString()} KRW
             </PredictionValue>
           </PredictionItem>
