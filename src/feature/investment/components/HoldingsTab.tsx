@@ -1,8 +1,9 @@
-import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 import styled, { keyframes } from 'styled-components';
 import { SummaryCard, ChartContainer, AssetTable } from '../styles/common';
+import { getUserAccount } from '../../../apis/userApis';
+import { getPredictedPrice } from '../../../apis/tradeApis';
 
 const spin = keyframes`
   0% { transform: rotate(0deg); }
@@ -226,11 +227,6 @@ interface UpbitAsset {
   unit_currency: string;
 }
 
-interface AssetResponse {
-  assets: UpbitAsset[];
-  btc_current_price: number;
-}
-
 interface CustomizedLabelProps {
   cx: number;
   cy: number;
@@ -299,11 +295,6 @@ const PredictionValue = styled.span<{ $isPositive?: boolean }>`
   color: ${props => props.$isPositive === undefined ? '#1e293b' : props.$isPositive ? '#10b981' : '#ef4444'};
 `;
 
-interface PredictionResponse {
-  success: boolean;
-  predicted_price: number;
-}
-
 const HoldingsTab = ({ token }: HoldingsTabProps) => {
   const [assets, setAssets] = useState<UpbitAsset[] | null>([]);
   const [btcCurrentPrice, setBtcCurrentPrice] = useState(0);
@@ -322,14 +313,12 @@ const HoldingsTab = ({ token }: HoldingsTabProps) => {
       return;
     }
     setLoading(true);
-    try {
-      const response = await axios.get<AssetResponse>('https://nexbit.p-e.kr/user/myasset');
-      setAssets(response.data.assets);
-      setBtcCurrentPrice(response.data.btc_current_price);
-    } catch (error: any) {
-      console.error("업비트 자산 불러오기 실패:", error.response?.data || error.message);
-      setAssets(null);
-    } finally {
+    
+    const account = await getUserAccount();
+    setAssets(account!.assets);
+    setBtcCurrentPrice(account!.btc_current_price);
+
+    if (account) {
       setLoading(false);
     }
   };
@@ -444,20 +433,15 @@ const HoldingsTab = ({ token }: HoldingsTabProps) => {
   }, []);
 
   const fetchPredictedPrice = async () => {
-    try {
-      const response = await axios.get<PredictionResponse>('https://nexbit.p-e.kr/api/predict_price');
-      if (response.data.success) {
-        const predictedPrice = response.data.predicted_price;
-        const expectedReturn = ((predictedPrice - btcCurrentPrice) / btcCurrentPrice) * 100;
-        
-        setPredictionData({
-          predictedPrice,
-          expectedReturn: Number(expectedReturn.toFixed(2))
-        });
-      }
-    } catch (error) {
-      console.error('예측 가격을 가져오는데 실패했습니다:', error);
-    }
+    const response = await getPredictedPrice();
+    
+    const predictedPrice = response!.data.predicted_price;
+    const expectedReturn = ((predictedPrice - btcCurrentPrice) / btcCurrentPrice) * 100;
+    
+    setPredictionData({
+      predictedPrice,
+      expectedReturn: Number(expectedReturn.toFixed(2))
+    });
   };
 
   useEffect(() => {
