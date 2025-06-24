@@ -2,8 +2,8 @@ import styled from "styled-components";
 import { useState, useEffect } from "react";
 import { useAuthStore } from "../../store/useAuthStore";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import { toast } from "react-toastify";
+import { getChartPrice, getPredictedPrice, getPredictedProbability, postOrder } from "../../apis/tradeApis";
 
 const TradingSectionWrapper = styled.div`
   display: flex;
@@ -362,15 +362,6 @@ const OrderModal = ({ isOpen, onClose, orderType, price, amount }: OrderModalPro
   );
 };
 
-interface PredictionResponse {
-  success: boolean;
-  predicted_price: number;
-}
-
-interface PredictionProbabilityResponse {
-  up_probability: number;
-}
-
 const TradingSection = () => {
   const token = useAuthStore((state) => state.token);
   const navigate = useNavigate();
@@ -403,36 +394,26 @@ const TradingSection = () => {
   };
 
   const fetchPredictedPrice = async () => {
-    try {
-      const response = await axios.get<PredictionResponse>('https://nexbit.p-e.kr/api/predict_price');
-      if (response.data.success) {
-        const predictedPrice = response.data.predicted_price;
-        const currentPriceValue = currentPrice || 0;
-        const expectedReturn = ((predictedPrice - currentPriceValue) / currentPriceValue) * 100;
-        setPredictionData(prev => ({
-          ...prev,
-          predictedPrice,
-          expectedReturn: Number(expectedReturn.toFixed(2))
-        }));
-      }
-    } catch (error) {
-      console.error('예측 가격을 가져오는데 실패했습니다:', error);
-    }
+    const response = await getPredictedPrice();
+
+    const predictedPrice = response!.data.predicted_price;
+    const currentPriceValue = currentPrice || 0;
+    const expectedReturn = ((predictedPrice - currentPriceValue) / currentPriceValue) * 100;
+    setPredictionData(prev => ({
+      ...prev,
+      predictedPrice,
+      expectedReturn: Number(expectedReturn.toFixed(2))
+    }));
   };
 
   const fetchPredictedProbability = async () => {
-    try {
-      const response = await axios.get<PredictionProbabilityResponse>('https://nexbit.p-e.kr/api/predict_probabtility');
-      if (response.data) {
-        const predictedProbability = response.data.up_probability * 100;
-        setPredictionData(prev => ({
-          ...prev,
-          profitProbability: Number(predictedProbability.toFixed(2))
-        }))
-      }
-    } catch (error) {
-      console.error('예측 확률을 가져오는데 실패했습니다:', error);
-    }
+    const response = await getPredictedProbability();
+
+    const predictedProbability = response!.data.up_probability * 100;
+    setPredictionData(prev => ({
+      ...prev,
+      profitProbability: Number(predictedProbability.toFixed(2))
+    }));
   }
 
   useEffect(() => {
@@ -464,61 +445,30 @@ const TradingSection = () => {
 
   useEffect(() => {
     const fetchCurrentPrice = async () => {
-      try {
-        console.log('가격 정보 요청 시작...');
-        const response = await axios.get(
-          'https://nexbit.p-e.kr/api/exchangePrice?interval=minutes/10&count=1'
-        );
-        
-        if (!response.data || !Array.isArray(response.data) || response.data.length === 0) {
-          console.error('API 응답이 올바르지 않습니다:', response.data);
-          setError('가격 정보를 받아올 수 없습니다.');
-          return;
-        }
+      const response = await getChartPrice('minutes/10', 1);
+      const latestData = response[0];
+      const price = latestData.close;
 
-        const latestData = response.data[0];
+      if (typeof price === 'number' && !isNaN(price) && price > 0) {
+        setCurrentPrice(price);
+        setPrice(price.toString());
+        setError('');
+      } else {
+        console.error('가격 데이터가 올바르지 않습니다:', {
+          price,
+          type: typeof price,
+          latestData
+        });
+        setError('가격 정보를 불러올 수 없습니다.');
+      }
 
-        const price = latestData.close;
-        
-        if (typeof price === 'number' && !isNaN(price) && price > 0) {
-          setCurrentPrice(price);
-          setPrice(price.toString());
-          setError('');
-        } else {
-          console.error('가격 데이터가 올바르지 않습니다:', {
-            price,
-            type: typeof price,
-            latestData
-          });
-          setError('가격 정보를 불러올 수 없습니다.');
-        }
-      } catch (error) {
-        console.error('현재 가격을 가져오는데 실패했습니다:', error);
-        if (axios.isAxiosError(error)) {
-          console.error('Axios 에러 상세:', {
-            status: error.response?.status,
-            statusText: error.response?.statusText,
-            data: error.response?.data,
-            message: error.message,
-            url: error.config?.url
-          });
-          if (error.response?.status === 404) {
-            setError('가격 정보 API를 찾을 수 없습니다. 잠시 후 다시 시도해주세요.');
-          } else if (error.response?.status === 401) {
-            setError('인증이 필요합니다. 로그인해주세요.');
-          } else {
-            setError(`가격 정보 조회 실패: ${error.response?.data?.message || error.message}`);
-          }
-        } else {
-          setError('현재 가격을 가져오는데 실패했습니다.');
-        }
-      } finally {
+      if (response) {
         setIsLoading(false);
       }
     };
 
     fetchCurrentPrice();
-    const interval = setInterval(fetchCurrentPrice, 10000);
+    const interval = setInterval(fetchCurrentPrice, 100000); // 100초
 
     return () => clearInterval(interval);
   }, []);
@@ -579,30 +529,10 @@ const TradingSection = () => {
 
     const quantity = calculateQuantity(numPrice, numAmount);
 
-    try {
-      const response = await axios.post(
-        'https://nexbit.p-e.kr/api/order',
-        {
-          market: "KRW-BTC",
-          side: type === "buy" ? "bid" : "ask",
-          price: numPrice.toFixed(0),
-          volume: quantity.toFixed(8),
-          ord_type: "limit"
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json"
-          },
-        }
-      );
-
-      if (response.status === 200) {
-        setAmount("");
-      }
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.error || error.message || "거래 실행 중 오류가 발생했습니다.";
-      setError(errorMessage);
+    const response = await postOrder({ token, type, numPrice, quantity });
+    
+    if (response && response.status === 200) {
+      setAmount("");
     }
   };
 

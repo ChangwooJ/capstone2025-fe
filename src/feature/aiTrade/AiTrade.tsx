@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import { getAiStatus, postActiveStatus } from "../../apis/tradeApis";
 
 const AiTradeWrapper = styled.div`
   display: flex;
@@ -81,23 +81,12 @@ const Button = styled.button<{ $isActive: boolean }>`
   }
 `;
 
-const ErrorMessage = styled.div`
-  color: #ef4444;
-  font-size: 0.875rem;
-  margin-top: 0.5rem;
-  padding: 0.5rem;
-  background-color: #fef2f2;
-  border-radius: 6px;
-  border: 1px solid #fee2e2;
-`;
-
 interface AiTradeProps {
   token: string | null;
 }
 
 const AiTrade = ({ token }: AiTradeProps) => {
   const [isActive, setIsActive] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -106,18 +95,9 @@ const AiTrade = ({ token }: AiTradeProps) => {
         return;
       }
 
-      try {
-        const response = await axios.get(
-          'https://nexbit.p-e.kr/user/ai/status',
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+      const response = await getAiStatus(token);
+      if (response) {
         setIsActive(response.data.status);
-      } catch (error: any) {
-        setError(error.response?.data?.message || "AI 거래 상태 확인 중 오류가 발생했습니다.");
       }
     };
 
@@ -130,24 +110,9 @@ const AiTrade = ({ token }: AiTradeProps) => {
       return;
     }
 
-    try {
-      const endpoint = isActive ? 'https://nexbit.p-e.kr/user/ai/stop' : 'https://nexbit.p-e.kr/user/ai/start';
-      const response = await axios.post(
-        endpoint,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (response.status === 200) {
-        setIsActive(!isActive);
-        setError("");
-      }
-    } catch (error: any) {
-      setError(error.response?.data?.message || "AI 거래 상태 변경 중 오류가 발생했습니다.");
+    const response = await postActiveStatus(isActive, token);
+    if (response) {
+      setIsActive(!isActive);
     }
   };
 
@@ -164,7 +129,6 @@ const AiTrade = ({ token }: AiTradeProps) => {
           {isActive ? "AI 거래 활성화" : "AI 거래 비활성화"}
         </StatusText>
       </StatusWrapper>
-      {error && <ErrorMessage>{error}</ErrorMessage>}
       <Button
         onClick={handleToggle}
         $isActive={isActive}

@@ -1,8 +1,9 @@
 import styled, { keyframes } from 'styled-components';
 import { useEffect, useState } from 'react';
-import axios from 'axios';
 import { SummaryCard, ChartContainer, AssetTable } from '../styles/common';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { getChartPrice } from '../../../apis/tradeApis';
+import { getUserAccount } from '../../../apis/userApis';
 
 const DateRange = styled.div`
   margin-bottom: 24px;
@@ -84,20 +85,6 @@ const TableContainer = styled.div`
   min-height: 400px;
 `;
 
-interface UpbitAsset {
-  currency: string;
-  balance: string;
-  locked: string;
-  avg_buy_price: string;
-  avg_buy_price_modified: boolean;
-  unit_currency: string;
-}
-
-interface AssetResponse {
-  assets: UpbitAsset[];
-  btc_current_price: number;
-}
-
 interface PriceData {
   id: number;
   datetime: string;
@@ -128,6 +115,9 @@ const formatDate = (dateStr: string) => {
   return `${date.getMonth() + 1}.${date.getDate()}`;
 };
 
+const interval = 'days';
+const count = 30;
+
 const ProfitTab = ({ token }: ProfitTabProps) => {
   const [dailyProfits, setDailyProfits] = useState<DailyProfit[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -136,17 +126,19 @@ const ProfitTab = ({ token }: ProfitTabProps) => {
   const [btcCurrentPrice, setBtcCurrentPrice] = useState(0);
 
   useEffect(() => {
-    console.log('상태 업데이트:', { btcBalance, btcAvgPrice, btcCurrentPrice });
-  }, [btcBalance, btcAvgPrice, btcCurrentPrice]);
-
-  useEffect(() => {
     const fetchData = async () => {
       if (!token) return;
 
       setIsLoading(true);
       try {
-        const assetResponse = await axios.get<AssetResponse>('https://nexbit.p-e.kr/user/myasset');
-        const btcAsset = assetResponse.data.assets.find(a => a.currency === 'BTC');
+        const assetResponse = await getUserAccount();
+
+        if (!assetResponse) {
+          console.log('자산 정보를 불러오지 못했습니다.');
+          return;
+        }
+        
+        const btcAsset = assetResponse.assets.find(a => a.currency === 'BTC');
 
         if (!btcAsset) {
           console.log('BTC 자산이 없습니다.');
@@ -155,25 +147,21 @@ const ProfitTab = ({ token }: ProfitTabProps) => {
 
         setBtcBalance(Number(btcAsset.balance));
         setBtcAvgPrice(Number(btcAsset.avg_buy_price));
-        setBtcCurrentPrice(assetResponse.data.btc_current_price);
+        setBtcCurrentPrice(assetResponse.btc_current_price);
 
         const balance = Number(btcAsset.balance);
         const avgPrice = Number(btcAsset.avg_buy_price);
-        const currentPrice = assetResponse.data.btc_current_price;
+        const currentPrice = assetResponse.btc_current_price;
 
-        const priceResponse = await axios.get<PriceData[]>('https://nexbit.p-e.kr/api/exchangePrice', {
-          params: {
-            interval: 'days',
-            count: 30,
-            market: 'KRW-BTC'
-          }
-        });
+        const priceData = await getChartPrice(interval, count);
+        if (!Array.isArray(priceData)) {
+          throw new Error('가격 데이터가 올바른 형식이 아닙니다.');
+        }
 
-        const priceData = priceResponse.data;
         const investmentValue = balance * avgPrice;
         const profits: DailyProfit[] = [];
 
-        priceData.reverse().forEach((day, index) => {
+        priceData.reverse().forEach((day: PriceData, index: number) => {
           const closingPrice = index === priceData.length - 1 ? currentPrice : day.close;
           const currentValue = balance * closingPrice;
           const cumulativeProfit = currentValue - investmentValue;

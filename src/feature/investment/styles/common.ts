@@ -34,12 +34,12 @@ export const AssetTable = styled.table`
   }
 `;
 
-export const FilterButton = styled.button<{ active: boolean }>`
+export const FilterButton = styled.button<{ $active: boolean }>`
   padding: 8px 15px;
   border-radius: 4px;
-  border: 1px solid ${props => props.active ? '#1e88e5' : '#ced4da'};
-  background-color: ${props => props.active ? '#1e88e5' : 'white'};
-  color: ${props => props.active ? 'white' : '#495057'};
+  border: 1px solid ${props => props.$active ? '#1e88e5' : '#ced4da'};
+  background-color: ${props => props.$active ? '#1e88e5' : 'white'};
+  color: ${props => props.$active ? 'white' : '#495057'};
   cursor: pointer;
   font-size: 0.9rem;
   &:hover {

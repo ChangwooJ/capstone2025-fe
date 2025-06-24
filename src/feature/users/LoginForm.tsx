@@ -1,9 +1,8 @@
 import React, { useState } from "react";
-import axios from "axios";
 import EmailImg from '../../assets/userImg.svg?react';
 import PasswordImg from '../../assets/passwordImg.svg?react';
-import { useAuthStore } from "../../store/useAuthStore";
 import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "../../store/useAuthStore";
 import {
   AuthContainer,
   AuthTitle,
@@ -16,44 +15,35 @@ import {
   SwitchButton,
   ErrorMessage
 } from './styles';
+import { postLogin } from "../../apis/userApis";
 
 interface LoginProps {
   setButtonState: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const Login = ({ setButtonState }: LoginProps) => {
-  const setToken = useAuthStore((state) => state.setToken);
   const navigate = useNavigate();
+  const setToken = useAuthStore((state) => state.setToken);
+  const [error, setError] = useState<string>("");
   const [form, setForm] = useState({
     email: "",
     password: "",
   });
-  const [error, setError] = useState<string>("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
-    setError(""); // 입력 시 에러 메시지 초기화
+    setError("");
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
-
-    try {
-      const response = await axios.post("https://nexbit.p-e.kr/user/login", {
-        email: form.email,
-        password: form.password,
-      });
-      setToken(response.data.token);
+    const response = await postLogin({ form });
+    if (typeof response === 'string') {
+      setError(response);
+    } else {
+      setToken(response.token);
       navigate(-1);
-    } catch (err) {
-      if (axios.isAxiosError(err)) {
-        setError(err.response?.data?.message || "로그인에 실패했습니다.");
-      } else if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("알 수 없는 오류가 발생했습니다.");
-      }
     }
   };
 

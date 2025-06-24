@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import styled, { keyframes } from 'styled-components';
-import axios from 'axios';
 import { AssetTable, FilterButton, FilterGroup } from '../styles/common';
+import { getTradeLogs } from '../../../apis/tradeApis';
 
 const spin = keyframes`
   0% { transform: rotate(0deg); }
@@ -100,32 +100,10 @@ const HistoryTab = ({ token }: HistoryTabProps) => {
     }
 
     setLoading(true);
-    try {
-      const response = await axios.get('https://nexbit.p-e.kr/user/mytradelogs', {
-        headers: {
-          Authorization: `Bearer ${token}`
-        },
-        params: {
-          side: selectedType === '매수' ? 'bid' : selectedType === '매도' ? 'ask' : undefined,
-          state: selectedType === '전체' ? undefined : 'done',
-          start_date: startDate,
-          end_date: endDate,
-          page: 1,
-          limit: 20,
-          order_by: 'desc'
-        }
-      });
-
-      if (response.data && response.data.success && Array.isArray(response.data.data)) {
-        setTradeLogs(response.data.data);
-      } else {
-        console.error("백엔드 응답 형식이 예상과 다릅니다:", response.data);
-        setTradeLogs([]);
-      }
-    } catch (error: any) {
-      console.error("거래 로그 불러오기 실패:", error.response?.data || error.message);
-      setTradeLogs([]);
-    } finally {
+    
+    const logData = await getTradeLogs({token, selectedType, startDate, endDate});
+    setTradeLogs(logData);
+    if (tradeLogs) {
       setLoading(false);
     }
   };
@@ -182,22 +160,22 @@ const HistoryTab = ({ token }: HistoryTabProps) => {
         <FilterGroup>
           <FilterLabel>기간</FilterLabel>
           <FilterButton
-            active={selectedPeriod === '1주'}
+            $active={selectedPeriod === '1주'}
             onClick={() => setSelectedPeriod('1주')}
             disabled={loading}
           >1주</FilterButton>
           <FilterButton
-            active={selectedPeriod === '1개월'}
+            $active={selectedPeriod === '1개월'}
             onClick={() => setSelectedPeriod('1개월')}
             disabled={loading}
           >1개월</FilterButton>
           <FilterButton
-            active={selectedPeriod === '3개월'}
+            $active={selectedPeriod === '3개월'}
             onClick={() => setSelectedPeriod('3개월')}
             disabled={loading}
           >3개월</FilterButton>
           <FilterButton
-            active={selectedPeriod === '6개월'}
+            $active={selectedPeriod === '6개월'}
             onClick={() => setSelectedPeriod('6개월')}
             disabled={loading}
           >6개월</FilterButton>
@@ -210,32 +188,20 @@ const HistoryTab = ({ token }: HistoryTabProps) => {
         <FilterGroup>
           <FilterLabel>종류</FilterLabel>
           <FilterButton
-            active={selectedType === '전체'}
+            $active={selectedType === '전체'}
             onClick={() => setSelectedType('전체')}
             disabled={loading}
           >전체</FilterButton>
           <FilterButton
-            active={selectedType === '매수'}
+            $active={selectedType === '매수'}
             onClick={() => setSelectedType('매수')}
             disabled={loading}
           >매수</FilterButton>
           <FilterButton
-            active={selectedType === '매도'}
+            $active={selectedType === '매도'}
             onClick={() => setSelectedType('매도')}
             disabled={loading}
           >매도</FilterButton>
-          {/*
-          <FilterButton
-            active={selectedType === '입금'}
-            onClick={() => setSelectedType('입금')}
-            disabled={loading}
-          >입금</FilterButton>
-          <FilterButton
-            active={selectedType === '출금'}
-            onClick={() => setSelectedType('출금')}
-            disabled={loading}
-          >출금</FilterButton>
-          */}
         </FilterGroup>
       </HistoryFilters>
 

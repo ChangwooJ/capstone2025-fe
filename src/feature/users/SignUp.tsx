@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import axios from "axios";
+import { postSignUp } from "../../apis/userApis.ts";
 import EmailImg from '../../assets/userImg.svg?react';
 import PasswordImg from '../../assets/passwordImg.svg?react';
 import {
@@ -61,21 +61,11 @@ const SignUp = ({ setButtonState }: SignUpProps) => {
       return;
     }
 
-    try {
-      await axios.post("https://nexbit.p-e.kr/user/signup", {
-        email: form.email,
-        password: form.password,
-        username: form.username,
-      });
+    const errorResponse = await postSignUp({ form });
+    if (errorResponse) {
+      setError(errorResponse);
+    } else {
       setButtonState("login");
-    } catch (err) {
-      if (axios.isAxiosError(err)) {
-        setError(err.response?.data?.message || "회원가입에 실패했습니다.");
-      } else if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("알 수 없는 오류가 발생했습니다.");
-      }
     }
   };
 

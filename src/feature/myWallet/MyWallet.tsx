@@ -1,9 +1,9 @@
 import styled from "styled-components";
 import { useAuthStore } from "../../store/useAuthStore";
 import { useEffect, useState } from "react";
-import axios from "axios";
 import EmailImg from '../../assets/userImg.svg?react';
 import { Link } from "react-router-dom";
+import { getUserAsset, getUserInfo } from "../../apis/userApis";
 
 const MyWalletContainer = styled.div`
   width: 100%;
@@ -191,23 +191,11 @@ const MyWallet  = () => {
 
   const fetchInfo = async () => {
     if (!token) {
-      setUserInfo(null);
-      setAssets(null);
       return;
     }
 
-    try {
-      const response = await axios.get('https://nexbit.p-e.kr/user/info', {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-      setUserInfo(response.data.user);
-    } catch (error) {
-      console.error("유저 정보 불러오기 실패:", error);
-      setUserInfo(null);
-      setAssets(null);
-    }
+    const userInfo = await getUserInfo(token);
+    setUserInfo(userInfo);
   };
 
   useEffect(() => {
@@ -215,12 +203,8 @@ const MyWallet  = () => {
   }, [token]);
 
   const fetchAssets = async () => {
-    try {
-      const response = await axios.get('https://nexbit.p-e.kr/user/mywallet');
-      setAssets(response.data);
-    } catch (error) {
-      console.error("업비트 자산 불러오기 실패:", error);
-    }
+    const asset = await getUserAsset();
+    setAssets(asset);
   };
 
   useEffect(() => {

@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import styled, { keyframes } from "styled-components";
 import PriceTitle from "./components/PriceTitle";
 import PriceChart from "./components/PriceChart";
+import { getChartPrice } from "../../apis/tradeApis";
+import { intervalOptions } from "./const/intervalOptions";
 
 const PriceInfoWrapper = styled.div`
   width: 100%;
@@ -102,48 +104,27 @@ const PriceInquiry = () => {
   const [error, setError] = useState<string>("");
   const [selectedInterval, setSelectedInterval] = useState('1시간');
 
-  const intervalOptions: { label: string; value: string; defaultCount: number }[] = [
-    { label: '1분', value: 'minutes/1', defaultCount: 6 * 24 * 1 }, 
-    { label: '10분', value: 'minutes/10', defaultCount: 6 * 24 * 1 },
-    { label: '30분', value: 'minutes/30', defaultCount: 6 * 24 * 1 }, 
-    { label: '1시간', value: 'minutes/60', defaultCount: 6 * 24 * 1 },
-    { label: '4시간', value: 'minutes/240', defaultCount: 6 * 6 },
-    { label: '일', value: 'days', defaultCount: 30 },
-    { label: '주', value: 'weeks', defaultCount: 30 },
-    { label: '월', value: 'months', defaultCount: 30 }, 
-  ];
-
   const currentCount = intervalOptions.find(opt => opt.label === selectedInterval)?.defaultCount || 200;
   const currentIntervalValue = intervalOptions.find(opt => opt.label === selectedInterval)?.value || 'minutes/60';
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        setError("");
+    const fetchData = async () => {try {
+      setLoading(true);
+      setError("");
 
-        const res = await fetch(`https://nexbit.p-e.kr/api/exchangePrice?interval=${currentIntervalValue}&count=${currentCount}&market=KRW-BTC`);
-
-        if (!res.ok) {
-          const errorText = await res.text();
-          throw new Error(`API 요청 실패: ${res.status} ${res.statusText} - ${errorText}`);
-        }
-
-        const data = await res.json();
-        setPriceData(data.reverse());
-      } catch (err: any) {
-        console.error('데이터 가져오기 오류:', err);
-        setError(`비트코인 시세 데이터를 불러오는데 실패했습니다: ${err.message}`);
-        setPriceData([]);
-      } finally {
-        setLoading(false);
-      }
+      const data = await getChartPrice(currentIntervalValue, currentCount);
+      setPriceData(data.reverse());
+    } catch (err: any) {
+      console.error("데이터 가져오기 오류:", err);
+      setError(`비트코인 시세 데이터를 불러오는데 실패했습니다: ${err.message}`);
+      setPriceData([]);
+    } finally {
+      setLoading(false);
+    }
     };
 
     fetchData();
-
-    const intervalId = setInterval(fetchData, 60000);
-
+    const intervalId = setInterval(fetchData, 100000);
     return () => clearInterval(intervalId);
   }, [selectedInterval, currentCount, currentIntervalValue]);
 
